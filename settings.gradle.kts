@@ -1,4 +1,0 @@
-rootProject.name = "APulse"
-include(":app")
-include(":apulse-core")
-include(":sample")
