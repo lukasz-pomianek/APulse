@@ -1,10 +1,11 @@
 plugins {
-    id("com.android.application")
+    id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.dagger.hilt.android")
     id("androidx.room")
     kotlin("kapt")
+    `maven-publish`
 }
 
 android {
@@ -12,16 +13,10 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.apulse"
         minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
-
+        
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
@@ -63,6 +58,13 @@ android {
     }
     room {
         schemaDirectory("$projectDir/schemas")
+    }
+    
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
     }
 }
 
@@ -130,4 +132,45 @@ dependencies {
     
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+}
+
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = "com.apulse"
+            artifactId = "apulse"
+            version = "1.0.0"
+
+            afterEvaluate {
+                from(components["release"])
+            }
+            
+            pom {
+                name.set("APulse")
+                description.set("Full-featured network debugging library for Android with modern Compose UI")
+                url.set("https://github.com/lukasz-pomianek/APulse")
+                
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+                
+                developers {
+                    developer {
+                        id.set("lukasz-pomianek")
+                        name.set("Łukasz Pomianek")
+                        url.set("https://github.com/lukasz-pomianek")
+                    }
+                }
+                
+                scm {
+                    connection.set("scm:git:git://github.com/lukasz-pomianek/APulse.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/lukasz-pomianek/APulse.git")
+                    url.set("https://github.com/lukasz-pomianek/APulse")
+                }
+            }
+        }
+    }
 }

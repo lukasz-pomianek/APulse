@@ -1,0 +1,4 @@
+jdk:
+  - openjdk17
+install:
+  - gradle :apulse-core:publishToMavenLocal :app:publishToMavenLocal --exclude-task :sample:build
