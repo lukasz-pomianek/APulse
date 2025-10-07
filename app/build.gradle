@@ -78,7 +78,7 @@ dependencies {
     implementation 'androidx.compose.material3:material3'
     implementation 'androidx.compose.material:material-icons-extended'
 
-    // Navigation
+    // Navigation (needed for internal UI navigation)
     implementation 'androidx.navigation:navigation-compose:2.5.3'
     implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
 
@@ -129,7 +129,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'com.apulse'
             artifactId = 'apulse'
-            version = '1.0.4'
+            version = '1.0.5'
 
             afterEvaluate {
                 from components.release

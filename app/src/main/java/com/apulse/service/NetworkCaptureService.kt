@@ -13,7 +13,7 @@ import androidx.core.app.NotificationCompat
 import com.apulse.R
 import com.apulse.capture.interceptor.CaptureSettings
 import com.apulse.data.db.APulseDatabase
-import com.apulse.ui.MainActivity
+// MainActivity removed - service is now library-compatible
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -152,11 +152,8 @@ class NetworkCaptureService : Service() {
     }
     
     private fun createNotification(): Notification {
-        val mainIntent = Intent(this, MainActivity::class.java)
-        val mainPendingIntent = PendingIntent.getActivity(
-            this, 0, mainIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        // Note: Library doesn't specify what activity to open
+        // Consuming apps should configure their own notification behavior
         
         val toggleIntent = Intent(this, NetworkCaptureService::class.java).apply {
             action = ACTION_TOGGLE_CAPTURE
@@ -172,7 +169,6 @@ class NetworkCaptureService : Service() {
             .setSmallIcon(R.drawable.ic_notification) // We'd need to create this icon
             .setContentTitle("APulse - Network Capture")
             .setContentText("Captured $requestCount requests in $currentSessionName")
-            .setContentIntent(mainPendingIntent)
             .addAction(
                 R.drawable.ic_stop, // We'd need this icon too
                 if (isCapturing) "Stop" else "Start",
