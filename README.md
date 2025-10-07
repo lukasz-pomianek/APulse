@@ -41,10 +41,10 @@ repositories {
 
 dependencies {
     // Core APulse library (always required, ~50KB)
-    implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.2")
+    implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.4")
     
     // Full UI (debug builds only, ~2MB)  
-    debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.2")
+    debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.4")
     
     // Required OkHttp dependency
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
