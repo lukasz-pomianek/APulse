@@ -3,6 +3,7 @@ package com.apulse.data.db
 import androidx.room.TypeConverter
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 class Converters {
@@ -25,7 +26,11 @@ class Converters {
     @TypeConverter
     fun toStringList(value: String?): List<String> {
         return if (value.isNullOrEmpty()) emptyList() 
-               else Json.decodeFromString<List<String>>(value)
+               else try {
+                   Json.decodeFromString<List<String>>(value)
+               } catch (e: Exception) {
+                   emptyList()
+               }
     }
     
     @TypeConverter
@@ -36,6 +41,10 @@ class Converters {
     @TypeConverter
     fun toStringMap(value: String?): Map<String, String> {
         return if (value.isNullOrEmpty()) emptyMap() 
-               else Json.decodeFromString<Map<String, String>>(value)
+               else try {
+                   Json.decodeFromString<Map<String, String>>(value)
+               } catch (e: Exception) {
+                   emptyMap()
+               }
     }
 }
