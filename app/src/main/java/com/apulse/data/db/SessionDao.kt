@@ -12,35 +12,35 @@ interface SessionDao {
     fun getAllSessions(): Flow<List<Session>>
     
     @Query("SELECT * FROM sessions WHERE id = :sessionId")
-    fun getSession(sessionId: String): Session?
+    suspend fun getSession(sessionId: String): Session?
     
     @Query("SELECT * FROM sessions WHERE isActive = 1 ORDER BY updatedAt DESC LIMIT 1")
-    fun getActiveSession(): Session?
+    suspend fun getActiveSession(): Session?
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertSession(session: Session): Long
+    suspend fun insertSession(session: Session): Long
     
     @Update
-    fun updateSession(session: Session): Int
+    suspend fun updateSession(session: Session): Int
     
     @Delete
-    fun deleteSession(session: Session): Int
+    suspend fun deleteSession(session: Session): Int
     
     @Query("DELETE FROM sessions WHERE id = :sessionId")
-    fun deleteSessionById(sessionId: String): Int
+    suspend fun deleteSessionById(sessionId: String): Int
     
     @Query("UPDATE sessions SET isActive = 0 WHERE id != :activeSessionId")
-    fun deactivateOtherSessions(activeSessionId: String): Int
+    suspend fun deactivateOtherSessions(activeSessionId: String): Int
     
     @Query("UPDATE sessions SET totalRequests = :count, totalSize = :size, updatedAt = :updatedAt WHERE id = :sessionId")
-    fun updateSessionStats(sessionId: String, count: Int, size: Long, updatedAt: Instant): Int
+    suspend fun updateSessionStats(sessionId: String, count: Int, size: Long, updatedAt: Instant): Int
     
     @Query("DELETE FROM sessions WHERE updatedAt < :cutoffTime")
-    fun deleteOldSessions(cutoffTime: Instant): Int
+    suspend fun deleteOldSessions(cutoffTime: Instant): Int
     
     @Query("SELECT COUNT(*) FROM sessions")
-    fun getSessionCount(): Int
+    suspend fun getSessionCount(): Int
     
     @Query("SELECT SUM(totalSize) FROM sessions")
-    fun getTotalSize(): Long?
+    suspend fun getTotalSize(): Long?
 }

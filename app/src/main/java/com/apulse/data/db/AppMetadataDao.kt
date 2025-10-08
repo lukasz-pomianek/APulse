@@ -7,23 +7,23 @@ import com.apulse.data.model.AppMetadata
 interface AppMetadataDao {
     
     @Query("SELECT * FROM app_metadata WHERE requestId = :requestId")
-    fun getMetadataForRequest(requestId: String): AppMetadata?
+    suspend fun getMetadataForRequest(requestId: String): AppMetadata?
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMetadata(metadata: AppMetadata)
+    suspend fun insertMetadata(metadata: AppMetadata): Long
     
     @Update
-    suspend fun updateMetadata(metadata: AppMetadata)
+    suspend fun updateMetadata(metadata: AppMetadata): Int
     
     @Delete
-    suspend fun deleteMetadata(metadata: AppMetadata)
+    suspend fun deleteMetadata(metadata: AppMetadata): Int
     
     @Query("DELETE FROM app_metadata WHERE requestId = :requestId")
-    suspend fun deleteMetadataForRequest(requestId: String)
+    suspend fun deleteMetadataForRequest(requestId: String): Int
     
     @Query("SELECT DISTINCT screenName FROM app_metadata WHERE screenName IS NOT NULL ORDER BY screenName")
-    fun getDistinctScreenNames(): List<String>
+    suspend fun getDistinctScreenNames(): List<String>
     
     @Query("SELECT DISTINCT userId FROM app_metadata WHERE userId IS NOT NULL ORDER BY userId")
-    fun getDistinctUserIds(): List<String>
+    suspend fun getDistinctUserIds(): List<String>
 }
