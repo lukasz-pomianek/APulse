@@ -17,11 +17,11 @@ APulse is distributed as two modules:
 
 ```kotlin
 dependencies {
-    // Always include core (lightweight, ~50KB)
-    implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.14")
+    // Core network capture functionality (~50KB)
+    implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.15")
     
-    // Only include full UI in debug builds (~2MB)
-    debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.14")
+    // Note: Full UI module temporarily unavailable
+    // Core module provides all network capture functionality
     
     // Your existing OkHttp dependency
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
@@ -380,8 +380,8 @@ releaseImplementation("com.github.chuckerteam.chucker:library-no-op:3.5.2")
 .addInterceptor(ChuckerInterceptor.Builder(context).build())
 
 // After
-implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.14")
-debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.14")
+implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.15")
+debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.15")
 
 .addInterceptor(APulse.createInterceptor(context))
 ```
@@ -395,8 +395,8 @@ debugImplementation('com.facebook.flipper:flipper-network-plugin:0.150.0')
 client.addInterceptor(new FlipperOkhttpInterceptor(networkFlipperPlugin))
 
 // After
-implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.14")
-debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.14")
+implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.15")
+debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.15")
 
 .addInterceptor(APulse.createInterceptor(context))
 ```
