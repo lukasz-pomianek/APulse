@@ -15,7 +15,7 @@ interface NetworkRequestDao {
     fun getRequestsForSession(sessionId: String): Flow<List<NetworkRequest>>
     
     @Query("SELECT * FROM network_requests WHERE id = :requestId")
-    suspend fun getRequest(requestId: String): NetworkRequest?
+    fun getRequest(requestId: String): NetworkRequest?
     
     @Query("""
         SELECT * FROM network_requests 
@@ -40,34 +40,34 @@ interface NetworkRequestDao {
     fun getBookmarkedRequests(): Flow<List<NetworkRequest>>
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertRequest(request: NetworkRequest)
+    fun insertRequest(request: NetworkRequest)
     
     @Update
-    suspend fun updateRequest(request: NetworkRequest)
+    fun updateRequest(request: NetworkRequest)
     
     @Delete
-    suspend fun deleteRequest(request: NetworkRequest)
+    fun deleteRequest(request: NetworkRequest)
     
     @Query("DELETE FROM network_requests WHERE sessionId = :sessionId")
-    suspend fun deleteRequestsForSession(sessionId: String)
+    fun deleteRequestsForSession(sessionId: String)
     
     @Query("DELETE FROM network_requests WHERE startTime < :cutoffTime")
-    suspend fun deleteOldRequests(cutoffTime: Instant)
+    fun deleteOldRequests(cutoffTime: Instant)
     
     @Query("UPDATE network_requests SET isBookmarked = :isBookmarked WHERE id = :requestId")
-    suspend fun updateBookmarkStatus(requestId: String, isBookmarked: Boolean)
+    fun updateBookmarkStatus(requestId: String, isBookmarked: Boolean)
     
     @Query("UPDATE network_requests SET tags = :tags WHERE id = :requestId")
-    suspend fun updateTags(requestId: String, tags: List<String>)
+    fun updateTags(requestId: String, tags: List<String>)
     
     @Query("UPDATE network_requests SET notes = :notes WHERE id = :requestId")
-    suspend fun updateNotes(requestId: String, notes: String?)
+    fun updateNotes(requestId: String, notes: String?)
     
     @Query("SELECT COUNT(*) FROM network_requests WHERE sessionId = :sessionId")
-    suspend fun getRequestCountForSession(sessionId: String): Int
+    fun getRequestCountForSession(sessionId: String): Int
     
     @Query("SELECT SUM(requestSize + responseSize) FROM network_requests WHERE sessionId = :sessionId")
-    suspend fun getTotalSizeForSession(sessionId: String): Long?
+    fun getTotalSizeForSession(sessionId: String): Long?
     
     @Query("SELECT DISTINCT host FROM network_requests WHERE sessionId = :sessionId ORDER BY host")
     fun getHostsForSession(sessionId: String): Flow<List<String>>

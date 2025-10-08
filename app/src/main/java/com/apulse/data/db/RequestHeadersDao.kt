@@ -7,17 +7,17 @@ import com.apulse.data.model.RequestHeaders
 interface RequestHeadersDao {
     
     @Query("SELECT * FROM request_headers WHERE requestId = :requestId")
-    suspend fun getHeadersForRequest(requestId: String): RequestHeaders?
+    fun getHeadersForRequest(requestId: String): RequestHeaders?
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertHeaders(headers: RequestHeaders)
+    fun insertHeaders(headers: RequestHeaders)
     
     @Update
-    suspend fun updateHeaders(headers: RequestHeaders)
+    fun updateHeaders(headers: RequestHeaders)
     
     @Delete
-    suspend fun deleteHeaders(headers: RequestHeaders)
+    fun deleteHeaders(headers: RequestHeaders)
     
     @Query("DELETE FROM request_headers WHERE requestId = :requestId")
-    suspend fun deleteHeadersForRequest(requestId: String)
+    fun deleteHeadersForRequest(requestId: String)
 }
