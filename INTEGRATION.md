@@ -18,13 +18,18 @@ APulse is distributed as two modules:
 ```kotlin
 dependencies {
     // Always include core (lightweight, ~50KB)
-    implementation("com.apulse:apulse-core:1.0.0")
+    implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.8")
     
     // Only include full UI in debug builds (~2MB)
-    debugImplementation("com.apulse:apulse:1.0.0")
+    debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.8")
     
     // Your existing OkHttp dependency
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    
+    // Add JitPack repository
+    repositories {
+        maven { url = uri("https://jitpack.io") }
+    }
 }
 ```
 
@@ -375,8 +380,8 @@ releaseImplementation("com.github.chuckerteam.chucker:library-no-op:3.5.2")
 .addInterceptor(ChuckerInterceptor.Builder(context).build())
 
 // After
-implementation("com.apulse:apulse-core:1.0.0")
-debugImplementation("com.apulse:apulse:1.0.0")
+implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.8")
+debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.8")
 
 .addInterceptor(APulse.createInterceptor(context))
 ```
@@ -390,8 +395,8 @@ debugImplementation('com.facebook.flipper:flipper-network-plugin:0.150.0')
 client.addInterceptor(new FlipperOkhttpInterceptor(networkFlipperPlugin))
 
 // After
-implementation("com.apulse:apulse-core:1.0.0")
-debugImplementation("com.apulse:apulse:1.0.0")
+implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.8")
+debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.8")
 
 .addInterceptor(APulse.createInterceptor(context))
 ```
