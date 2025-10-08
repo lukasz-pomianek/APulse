@@ -40,28 +40,28 @@ interface NetworkRequestDao {
     fun getBookmarkedRequests(): Flow<List<NetworkRequest>>
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertRequest(request: NetworkRequest): Long
+    suspend fun insertRequest(request: NetworkRequest)
     
     @Update
-    suspend fun updateRequest(request: NetworkRequest): Int
+    suspend fun updateRequest(request: NetworkRequest)
     
     @Delete
-    suspend fun deleteRequest(request: NetworkRequest): Int
+    suspend fun deleteRequest(request: NetworkRequest)
     
     @Query("DELETE FROM network_requests WHERE sessionId = :sessionId")
-    suspend fun deleteRequestsForSession(sessionId: String): Int
+    suspend fun deleteRequestsForSession(sessionId: String)
     
     @Query("DELETE FROM network_requests WHERE startTime < :cutoffTime")
-    suspend fun deleteOldRequests(cutoffTime: Instant): Int
+    suspend fun deleteOldRequests(cutoffTime: Instant)
     
     @Query("UPDATE network_requests SET isBookmarked = :isBookmarked WHERE id = :requestId")
-    suspend fun updateBookmarkStatus(requestId: String, isBookmarked: Boolean): Int
+    suspend fun updateBookmarkStatus(requestId: String, isBookmarked: Boolean)
     
     @Query("UPDATE network_requests SET tags = :tags WHERE id = :requestId")
-    suspend fun updateTags(requestId: String, tags: List<String>): Int
+    suspend fun updateTags(requestId: String, tags: List<String>)
     
     @Query("UPDATE network_requests SET notes = :notes WHERE id = :requestId")
-    suspend fun updateNotes(requestId: String, notes: String?): Int
+    suspend fun updateNotes(requestId: String, notes: String?)
     
     @Query("SELECT COUNT(*) FROM network_requests WHERE sessionId = :sessionId")
     suspend fun getRequestCountForSession(sessionId: String): Int

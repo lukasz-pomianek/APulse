@@ -55,7 +55,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'com.apulse'
             artifactId = 'apulse-core'
-            version = '1.0.12'
+            version = '1.0.13'
 
             afterEvaluate {
                 from components.release

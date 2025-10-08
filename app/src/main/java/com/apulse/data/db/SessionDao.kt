@@ -18,25 +18,25 @@ interface SessionDao {
     suspend fun getActiveSession(): Session?
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSession(session: Session): Long
+    suspend fun insertSession(session: Session)
     
     @Update
-    suspend fun updateSession(session: Session): Int
+    suspend fun updateSession(session: Session)
     
     @Delete
-    suspend fun deleteSession(session: Session): Int
+    suspend fun deleteSession(session: Session)
     
     @Query("DELETE FROM sessions WHERE id = :sessionId")
-    suspend fun deleteSessionById(sessionId: String): Int
+    suspend fun deleteSessionById(sessionId: String)
     
     @Query("UPDATE sessions SET isActive = 0 WHERE id != :activeSessionId")
-    suspend fun deactivateOtherSessions(activeSessionId: String): Int
+    suspend fun deactivateOtherSessions(activeSessionId: String)
     
     @Query("UPDATE sessions SET totalRequests = :count, totalSize = :size, updatedAt = :updatedAt WHERE id = :sessionId")
-    suspend fun updateSessionStats(sessionId: String, count: Int, size: Long, updatedAt: Instant): Int
+    suspend fun updateSessionStats(sessionId: String, count: Int, size: Long, updatedAt: Instant)
     
     @Query("DELETE FROM sessions WHERE updatedAt < :cutoffTime")
-    suspend fun deleteOldSessions(cutoffTime: Instant): Int
+    suspend fun deleteOldSessions(cutoffTime: Instant)
     
     @Query("SELECT COUNT(*) FROM sessions")
     suspend fun getSessionCount(): Int

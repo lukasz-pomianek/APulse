@@ -10,16 +10,16 @@ interface AppMetadataDao {
     suspend fun getMetadataForRequest(requestId: String): AppMetadata?
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMetadata(metadata: AppMetadata): Long
+    suspend fun insertMetadata(metadata: AppMetadata)
     
     @Update
-    suspend fun updateMetadata(metadata: AppMetadata): Int
+    suspend fun updateMetadata(metadata: AppMetadata)
     
     @Delete
-    suspend fun deleteMetadata(metadata: AppMetadata): Int
+    suspend fun deleteMetadata(metadata: AppMetadata)
     
     @Query("DELETE FROM app_metadata WHERE requestId = :requestId")
-    suspend fun deleteMetadataForRequest(requestId: String): Int
+    suspend fun deleteMetadataForRequest(requestId: String)
     
     @Query("SELECT DISTINCT screenName FROM app_metadata WHERE screenName IS NOT NULL ORDER BY screenName")
     suspend fun getDistinctScreenNames(): List<String>

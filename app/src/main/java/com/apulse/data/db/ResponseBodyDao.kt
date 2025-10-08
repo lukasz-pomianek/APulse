@@ -10,16 +10,16 @@ interface ResponseBodyDao {
     suspend fun getBodyForRequest(requestId: String): ResponseBody?
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertBody(body: ResponseBody): Long
+    suspend fun insertBody(body: ResponseBody)
     
     @Update
-    suspend fun updateBody(body: ResponseBody): Int
+    suspend fun updateBody(body: ResponseBody)
     
     @Delete
-    suspend fun deleteBody(body: ResponseBody): Int
+    suspend fun deleteBody(body: ResponseBody)
     
     @Query("DELETE FROM response_bodies WHERE requestId = :requestId")
-    suspend fun deleteBodyForRequest(requestId: String): Int
+    suspend fun deleteBodyForRequest(requestId: String)
     
     @Query("SELECT SUM(size) FROM response_bodies")
     suspend fun getTotalBodySize(): Long?

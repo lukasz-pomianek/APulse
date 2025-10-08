@@ -10,14 +10,14 @@ interface RequestHeadersDao {
     suspend fun getHeadersForRequest(requestId: String): RequestHeaders?
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertHeaders(headers: RequestHeaders): Long
+    suspend fun insertHeaders(headers: RequestHeaders)
     
     @Update
-    suspend fun updateHeaders(headers: RequestHeaders): Int
+    suspend fun updateHeaders(headers: RequestHeaders)
     
     @Delete
-    suspend fun deleteHeaders(headers: RequestHeaders): Int
+    suspend fun deleteHeaders(headers: RequestHeaders)
     
     @Query("DELETE FROM request_headers WHERE requestId = :requestId")
-    suspend fun deleteHeadersForRequest(requestId: String): Int
+    suspend fun deleteHeadersForRequest(requestId: String)
 }
