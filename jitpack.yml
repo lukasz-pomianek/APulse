@@ -3,4 +3,4 @@ jdk:
 before_install:
   - chmod +x gradlew
 install: 
-  - ./gradlew :apulse-core:publishToMavenLocal -x test -x lint --stacktrace
+  - ./gradlew :apulse-core:publishToMavenLocal :app:publishToMavenLocal -x test -x lint --stacktrace
