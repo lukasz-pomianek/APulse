@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">APulse Sample</string>
+    <string name="apulse_interceptor_active">APulse Interceptor Active</string>
+    <string name="auth_request">Auth Request</string>
+    <string name="clear_responses">Clear Responses</string>
+    <string name="delete_user">DELETE User</string>
+    <string name="error_request">Error Request</string>
+    <string name="get_users">GET Users</string>
+    <string name="large_request">Large Request</string>
+    <string name="network_test_demo">Network Test Demo</string>
+    <string name="post_user">POST User</string>
+    <string name="put_user">PUT User</string>
+    <string name="response_log">Response Log</string>
+    <string name="upload_image">Upload Image</string>
+    <style name="Theme.APulseSample" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+</resources>

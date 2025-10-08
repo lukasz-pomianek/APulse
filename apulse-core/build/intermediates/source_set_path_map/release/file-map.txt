@@ -1,0 +1,11 @@
+com.apulse.core.apulse-core-lifecycle-runtime-2.3.1-0 /Users/lukasz.pomianek/.gradle/caches/transforms-3/0c664a423e6deceb3fa717263cc5fc77/transformed/lifecycle-runtime-2.3.1/res
+com.apulse.core.apulse-core-core-1.10.1-1 /Users/lukasz.pomianek/.gradle/caches/transforms-3/452f6b3733a4ea9efaa44f63b8189722/transformed/core-1.10.1/res
+com.apulse.core.apulse-core-jetified-core-ktx-1.10.1-2 /Users/lukasz.pomianek/.gradle/caches/transforms-3/74cf4ccb408a29ae0a4f293fa45a8798/transformed/jetified-core-ktx-1.10.1/res
+com.apulse.core.apulse-core-jetified-annotation-experimental-1.3.0-3 /Users/lukasz.pomianek/.gradle/caches/transforms-3/e8874b3c6d152f6602c9e9384bc96a07/transformed/jetified-annotation-experimental-1.3.0/res
+com.apulse.core.apulse-core-pngs-4 /Users/lukasz.pomianek/developer/projects/GitHub/APulse/apulse-core/build/generated/res/pngs/release
+com.apulse.core.apulse-core-resValues-5 /Users/lukasz.pomianek/developer/projects/GitHub/APulse/apulse-core/build/generated/res/resValues/release
+com.apulse.core.apulse-core-mergeReleaseResources-6 /Users/lukasz.pomianek/developer/projects/GitHub/APulse/apulse-core/build/intermediates/incremental/release/mergeReleaseResources/merged.dir
+com.apulse.core.apulse-core-mergeReleaseResources-7 /Users/lukasz.pomianek/developer/projects/GitHub/APulse/apulse-core/build/intermediates/incremental/release/mergeReleaseResources/stripped.dir
+com.apulse.core.apulse-core-merged_res-8 /Users/lukasz.pomianek/developer/projects/GitHub/APulse/apulse-core/build/intermediates/merged_res/release
+com.apulse.core.apulse-core-main-9 /Users/lukasz.pomianek/developer/projects/GitHub/APulse/apulse-core/src/main/res
+com.apulse.core.apulse-core-release-10 /Users/lukasz.pomianek/developer/projects/GitHub/APulse/apulse-core/src/release/res

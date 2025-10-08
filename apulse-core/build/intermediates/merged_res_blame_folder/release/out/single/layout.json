@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "com.apulse.core.apulse-core-merged_res-7:/layout/notification_template_part_time.xml",
+        "source": "com.apulse.core.apulse-core-core-1.10.1-1:/layout/notification_template_part_time.xml"
+    },
+    {
+        "merged": "com.apulse.core.apulse-core-merged_res-7:/layout/custom_dialog.xml",
+        "source": "com.apulse.core.apulse-core-core-1.10.1-1:/layout/custom_dialog.xml"
+    },
+    {
+        "merged": "com.apulse.core.apulse-core-merged_res-7:/layout/notification_template_part_chronometer.xml",
+        "source": "com.apulse.core.apulse-core-core-1.10.1-1:/layout/notification_template_part_chronometer.xml"
+    }
+]

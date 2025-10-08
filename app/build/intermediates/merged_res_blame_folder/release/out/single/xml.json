@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "com.apulse.app-merged_res-54:/xml/file_provider_paths.xml",
+        "source": "com.apulse.app-main-55:/xml/file_provider_paths.xml"
+    },
+    {
+        "merged": "com.apulse.app-merged_res-54:/xml/backup_rules.xml",
+        "source": "com.apulse.app-main-55:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "com.apulse.app-merged_res-54:/xml/data_extraction_rules.xml",
+        "source": "com.apulse.app-main-55:/xml/data_extraction_rules.xml"
+    }
+]

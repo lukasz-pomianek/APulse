@@ -1,0 +1,18 @@
+R_DEF: Internal format may change without notice
+local
+string app_name
+string apulse_interceptor_active
+string auth_request
+string clear_responses
+string delete_user
+string error_request
+string get_users
+string large_request
+string network_test_demo
+string post_user
+string put_user
+string response_log
+string upload_image
+style Theme.APulseSample
+xml backup_rules
+xml data_extraction_rules
