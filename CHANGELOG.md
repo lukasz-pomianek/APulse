@@ -113,6 +113,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.23] - 2025-10-09
+
+### Added
+- New `apulse-ktor` module:
+  - Ktor client plugin `APulsePlugin` for minimal capture on non-OkHttp engines
+  - OkHttp engine helper `okhttpEngineWithAPulse(context)` to auto-attach APulse interceptor
+
+### Docs
+- README/INTEGRATION updated with Ktor setup and new artifact coordinates
+
+
 ## [1.0.21] - 2025-10-09
 
 ### Added

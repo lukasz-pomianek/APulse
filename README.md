@@ -41,10 +41,12 @@ repositories {
 
 dependencies {
     // Core APulse library (network capture functionality, ~50KB)
-    implementation("com.github.lukasz-pomianek:apulse-core:v1.0.22")
+    implementation("com.github.lukasz-pomianek:apulse-core:v1.0.23")
     
     // Full UI module for debug interface (~2MB) - debug builds only
-    debugImplementation("com.github.lukasz-pomianek:apulse:v1.0.22")
+    debugImplementation("com.github.lukasz-pomianek:apulse:v1.0.23")
+    // Optional: Ktor plugin
+    debugImplementation("com.github.lukasz-pomianek:apulse-ktor:v1.0.23")
     
     // Required OkHttp dependency
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
@@ -249,6 +251,17 @@ if (BuildConfig.DEBUG) {
 }
 
 val client = clientBuilder.build()
+```
+
+### Ktor Client
+
+```kotlin
+val client = HttpClient(OkHttp) {
+    engine {
+        config(okhttpEngineWithAPulse(context))
+    }
+    install(APulsePlugin)
+}
 ```
 
 ## API Reference
