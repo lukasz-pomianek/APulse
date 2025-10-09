@@ -5,11 +5,7 @@ import android.content.SharedPreferences
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import javax.inject.Inject
-import javax.inject.Singleton
-
-@Singleton
-class SecurityPolicyManager @Inject constructor(
+class SecurityPolicyManager(
     private val context: Context,
     private val redactionEngine: RedactionEngine
 ) {

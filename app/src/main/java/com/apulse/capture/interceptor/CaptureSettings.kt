@@ -4,13 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.apulse.redaction.RedactionEngine
 import com.apulse.redaction.SecurityPolicyManager
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
-
-@Singleton
-class CaptureSettings @Inject constructor(
-    @ApplicationContext private val context: Context,
+class CaptureSettings(
+    private val context: Context,
     private val redactionEngine: RedactionEngine,
     private val securityPolicyManager: SecurityPolicyManager
 ) {

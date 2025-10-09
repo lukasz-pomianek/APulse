@@ -14,11 +14,7 @@ import okio.BufferedSource
 import java.io.IOException
 import java.net.URL
 import java.util.*
-import javax.inject.Inject
-import javax.inject.Singleton
-
-@Singleton
-class APulseInterceptor @Inject constructor(
+class APulseInterceptor(
     private val context: Context,
     private val database: APulseDatabase,
     private val captureSettings: CaptureSettings

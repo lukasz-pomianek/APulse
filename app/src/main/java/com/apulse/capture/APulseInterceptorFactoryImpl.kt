@@ -18,17 +18,12 @@ class APulseInterceptorFactoryImpl : APulseInterceptorFactory {
     
     override fun createInterceptor(context: Context, config: APulseConfig): Interceptor {
         // Initialize database
-        val database = APulseDatabase.getInstance(context)
+        val database = APulseDatabase.getDatabase(context)
         
-        // Create capture settings
-        val captureSettings = CaptureSettings(
-            redactionEngine = RedactionEngine(),
-            securityPolicyManager = SecurityPolicyManager(),
-            maxRequestBodySize = config.maxRequestBodySize,
-            maxResponseBodySize = config.maxResponseBodySize,
-            enableRedaction = config.enableAutoRedaction,
-            enableEncryption = config.enableEncryption
-        )
+        // Create dependencies manually (no DI)
+        val redactionEngine = RedactionEngine(context)
+        val securityPolicyManager = SecurityPolicyManager(context, redactionEngine)
+        val captureSettings = CaptureSettings(context, redactionEngine, securityPolicyManager)
         
         // Return the actual interceptor
         return APulseInterceptor(
