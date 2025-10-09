@@ -161,4 +161,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docs updated to use JitPack tag `v1.0.21`
 
 
+## [1.0.27] - 2025-10-09
+
+### Fixed
+- Disable javadocJar generation for Android AAR publications to avoid Dokka/docJar failures on JitPack
+
+### Docs
+- Bump versions to v1.0.27
+
+---
+
 **Note**: This is the initial release. APulse is inspired by [Pulse](https://github.com/kean/Pulse) for iOS but is a completely independent implementation built specifically for Android with modern development practices.
