@@ -1,6 +1,7 @@
 package com.apulse.service
 
 import com.apulse.data.db.APulseDatabase
+import com.apulse.data.model.NetworkRequest
 import com.apulse.data.model.Session
 import com.apulse.data.model.SessionWithStats
 import kotlinx.coroutines.CoroutineScope
@@ -159,10 +160,16 @@ class SessionManager(
     suspend fun mergeSessionsInto(targetSessionId: String, sourceSessionIds: List<String>): Boolean {
         val targetSession = database.sessionDao().getSession(targetSessionId) ?: return false
         
+        // Get all source requests outside of transaction since runInTransaction is not suspend
+        val allSourceRequests = mutableListOf<Pair<String, List<NetworkRequest>>>()
+        sourceSessionIds.forEach { sourceId ->
+            val sourceRequests = database.networkRequestDao().getRequestsForSession(sourceId).first()
+            allSourceRequests.add(sourceId to sourceRequests)
+        }
+        
         database.runInTransaction {
-            sourceSessionIds.forEach { sourceId ->
+            allSourceRequests.forEach { (sourceId, sourceRequests) ->
                 // Move all requests from source to target
-                val sourceRequests = database.networkRequestDao().getRequestsForSession(sourceId).first()
                 sourceRequests.forEach { request ->
                     val updatedRequest = request.copy(sessionId = targetSessionId)
                     database.networkRequestDao().updateRequest(updatedRequest)
@@ -171,10 +178,10 @@ class SessionManager(
                 // Delete the source session
                 database.sessionDao().deleteSessionById(sourceId)
             }
-            
-            // Update target session stats
-            updateSessionStatsInternal(targetSessionId)
         }
+        
+        // Update target session stats outside transaction
+        updateSessionStatsInternal(targetSessionId)
         
         return true
     }

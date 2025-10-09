@@ -322,6 +322,7 @@ enum class SecurityAction {
     BLOCK_EXPORT
 }
 
+@Serializable
 enum class ComplianceMode(val displayName: String) {
     PERMISSIVE("Permissive"),
     STANDARD("Standard"),
@@ -368,12 +369,14 @@ data class ComplianceReport(
     val risks: List<SecurityRisk>
 )
 
+@Serializable
 data class SecurityRisk(
     val level: RiskLevel,
     val description: String,
     val recommendation: String
 )
 
+@Serializable
 enum class RiskLevel {
     LOW, MEDIUM, HIGH, CRITICAL
 }

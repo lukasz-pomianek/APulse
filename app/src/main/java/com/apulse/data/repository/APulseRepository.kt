@@ -103,11 +103,10 @@ class APulseRepository(
     }
     
     // Analytics and stats
-    fun getSessionStats(): Flow<List<SessionWithStats>> {
-        return getAllSessions().map { sessions ->
-            sessions.map { session ->
-                sessionManager.getSessionWithStats(session.id) ?: SessionWithStats(session = session)
-            }
+    suspend fun getSessionStats(): List<SessionWithStats> {
+        val sessions = getAllSessions().first()
+        return sessions.map { session ->
+            sessionManager.getSessionWithStats(session.id) ?: SessionWithStats(session = session)
         }
     }
     
@@ -136,19 +135,21 @@ class APulseRepository(
     }
     
     suspend fun clearAllData() {
+        // Get sessions outside transaction since runInTransaction is not suspend
+        val sessions = database.sessionDao().getAllSessions().first()
+        
         database.runInTransaction {
             // Delete all data but keep at least one session
-            val sessions = database.sessionDao().getAllSessions().first()
             if (sessions.size > 1) {
                 sessions.drop(1).forEach { session ->
                     database.sessionDao().deleteSessionById(session.id)
                 }
             }
-            
-            // Clear the remaining session
-            sessions.firstOrNull()?.let { session ->
-                clearSession(session.id)
-            }
+        }
+        
+        // Clear the remaining session (this needs to be outside transaction for suspend calls)
+        sessions.firstOrNull()?.let { session ->
+            clearSession(session.id)
         }
     }
     

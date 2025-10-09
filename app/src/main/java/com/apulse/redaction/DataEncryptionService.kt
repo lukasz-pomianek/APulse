@@ -282,10 +282,19 @@ object PrivacyUtils {
     fun maskPhoneNumber(phone: String): String {
         val digits = phone.filter { it.isDigit() }
         return if (digits.length >= 10) {
-            val masked = "*".repeat(digits.length - 4) + digits.takeLast(4)
-            phone.replace(Regex("\\d"), "").zip(masked.asIterable()).joinToString("") { (orig, mask) ->
-                if (orig.isDigit()) mask.toString() else orig.toString()
-            } + masked.drop(phone.count { !it.isDigit() })
+            val maskedDigits = "*".repeat(digits.length - 4) + digits.takeLast(4)
+            var digitIndex = 0
+            phone.map { char ->
+                if (char.isDigit()) {
+                    if (digitIndex < maskedDigits.length) {
+                        maskedDigits[digitIndex++]
+                    } else {
+                        char
+                    }
+                } else {
+                    char
+                }
+            }.joinToString("")
         } else {
             "[MASKED_PHONE]"
         }
