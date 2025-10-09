@@ -70,6 +70,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.26] - 2025-10-09
+
+### Fixed
+- JitPack build for `apulse-ktor`: add missing `consumer-rules.pro` and minimal `proguard-rules.pro`
+
+### Docs
+- README/INTEGRATION bumped to `v1.0.26`
+
+
 ## [1.0.24] - 2025-10-09
 
 ### Fixed
