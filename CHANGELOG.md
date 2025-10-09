@@ -70,6 +70,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.24] - 2025-10-09
+
+### Fixed
+- Ktor plugin: replaced deprecated/incorrect hooks with `onRequest`/`onResponse` and fixed `cancel(null)` call to match API
+
+### Docs
+- README/INTEGRATION bumped to `v1.0.24`
+
+
 ## [1.0.22] - 2025-10-09
 
 ### Fixed

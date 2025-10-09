@@ -16,17 +16,17 @@ import okhttp3.Interceptor
  * If a different engine is used, we still record high-level metadata.
  */
 val APulsePlugin = createClientPlugin("APulsePlugin") {
-    onSend { request, _ ->
-        // No-op on send; capturing is handled in receive for non-OkHttp engines
+    onRequest { _: HttpRequestBuilder, _: Any? ->
+        // No-op on request; primary capture is via OkHttp interceptor when available
     }
 
-    onResponse { response ->
+    onResponse { response: HttpResponse ->
         // For non-OkHttp engines, we capture minimal response data
         // Advanced capture is available automatically when engine=OkHttp with APulse interceptor
         try {
             // Touch the body off main thread
             withContext(Dispatchers.IO) {
-                response.bodyAsChannel().cancel() // ensure stream consumption without buffering
+                response.bodyAsChannel().cancel(null) // ensure stream is released without buffering
             }
         } catch (_: Throwable) {
         }
