@@ -380,8 +380,8 @@ releaseImplementation("com.github.chuckerteam.chucker:library-no-op:3.5.2")
 .addInterceptor(ChuckerInterceptor.Builder(context).build())
 
 // After
-implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.18")
-debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.18")
+implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.19")
+debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.19")
 
 .addInterceptor(APulse.createInterceptor(context))
 ```
@@ -395,8 +395,8 @@ debugImplementation('com.facebook.flipper:flipper-network-plugin:0.150.0')
 client.addInterceptor(new FlipperOkhttpInterceptor(networkFlipperPlugin))
 
 // After
-implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.18")
-debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.18")
+implementation("com.github.lukasz-pomianek.APulse:apulse-core:v1.0.19")
+debugImplementation("com.github.lukasz-pomianek.APulse:app:v1.0.19")
 
 .addInterceptor(APulse.createInterceptor(context))
 ```
