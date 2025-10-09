@@ -101,4 +101,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.21] - 2025-10-09
+
+### Added
+- Internal `com.apulse.ui.MainActivity` declared in library manifest (`android:exported="false"`) to host APulse Compose UI without client manifest changes
+
+### Changed
+- Docs updated to use JitPack tag `v1.0.21`
+
+
 **Note**: This is the initial release. APulse is inspired by [Pulse](https://github.com/kean/Pulse) for iOS but is a completely independent implementation built specifically for Android with modern development practices.

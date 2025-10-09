@@ -9,4 +9,12 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
 
+    <application>
+        <!-- Internal UI Activity - no client manifest changes needed -->
+        <activity
+            android:name="com.apulse.ui.MainActivity"
+            android:exported="false"
+            android:label="APulse" />
+    </application>
+
 </manifest>
