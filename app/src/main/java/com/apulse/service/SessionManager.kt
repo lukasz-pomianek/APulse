@@ -180,7 +180,7 @@ class SessionManager(
     }
     
     suspend fun cleanupOldSessions(olderThanDays: Int = 30) {
-        val cutoffTime = Clock.System.now().minus(kotlinx.datetime.DateTimeUnit.DAY * olderThanDays)
+        val cutoffTime = Clock.System.now().minus(olderThanDays, kotlinx.datetime.DateTimeUnit.DAY)
         
         // Don't delete the active session
         val activeSessionId = _currentSessionId.value

@@ -5,10 +5,11 @@ import android.content.SharedPreferences
 import com.apulse.redaction.RedactionEngine
 import com.apulse.redaction.SecurityPolicyManager
 class CaptureSettings(
-    private val context: Context,
-    private val redactionEngine: RedactionEngine,
-    private val securityPolicyManager: SecurityPolicyManager
+    private val context: Context
 ) {
+    
+    private val redactionEngine: RedactionEngine by lazy { RedactionEngine(context) }
+    private val securityPolicyManager: SecurityPolicyManager by lazy { SecurityPolicyManager(context, redactionEngine) }
     
     companion object {
         private const val PREFS_NAME = "apulse_capture_settings"

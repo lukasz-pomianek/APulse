@@ -154,7 +154,7 @@ class APulseRepository(
     
     suspend fun cleanupOldData(olderThanDays: Int = 30) {
         val cutoffTime = kotlinx.datetime.Clock.System.now()
-            .minus(kotlinx.datetime.DateTimeUnit.DAY * olderThanDays)
+            .minus(olderThanDays, kotlinx.datetime.DateTimeUnit.DAY)
         
         // Clean up old requests
         database.networkRequestDao().deleteOldRequests(cutoffTime)

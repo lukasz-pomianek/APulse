@@ -21,9 +21,7 @@ class APulseInterceptorFactoryImpl : APulseInterceptorFactory {
         val database = APulseDatabase.getDatabase(context)
         
         // Create dependencies manually (no DI)
-        val redactionEngine = RedactionEngine(context)
-        val securityPolicyManager = SecurityPolicyManager(context, redactionEngine)
-        val captureSettings = CaptureSettings(context, redactionEngine, securityPolicyManager)
+        val captureSettings = CaptureSettings(context)
         
         // Return the actual interceptor
         return APulseInterceptor(
