@@ -122,6 +122,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.25] - 2025-10-09
+
+### Added
+- Auto-session creation on `APulse.initialize()` via optional initializer hook
+- UI module implements `APulseInitializerImpl` to ensure default active session exists on app start
+
+### Docs
+- README/INTEGRATION updated; note that sessions are auto-created on initialize
+
+
 ## [1.0.23] - 2025-10-09
 
 ### Added

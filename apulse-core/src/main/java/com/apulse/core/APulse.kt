@@ -28,6 +28,13 @@ object APulse {
         appContext = context.applicationContext
         config.apply(configure)
         isInitialized = true
+
+        // Allow the UI/app module to perform additional initialization (e.g., ensure session exists)
+        try {
+            APulseInitializer.initialize(appContext, config)
+        } catch (_: Exception) {
+            // Safe to ignore when UI module is not present
+        }
     }
     
     /**
@@ -123,6 +130,26 @@ interface APulseInterceptorFactory {
     }
     
     fun createInterceptor(context: Context, config: APulseConfig): Interceptor
+}
+
+/**
+ * Optional initializer hook implemented in the UI module to perform
+ * additional setup at app start (e.g., create a default active session).
+ */
+interface APulseInitializer {
+    companion object {
+        fun initialize(context: Context, config: APulseConfig) {
+            try {
+                val clazz = Class.forName("com.apulse.init.APulseInitializerImpl")
+                val impl = clazz.getDeclaredConstructor().newInstance() as APulseInitializer
+                impl.onInitialize(context, config)
+            } catch (_: Exception) {
+                // No UI module present or initializer failed – capture still works with no-op
+            }
+        }
+    }
+
+    fun onInitialize(context: Context, config: APulseConfig)
 }
 
 /**

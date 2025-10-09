@@ -3,14 +3,18 @@ package com.apulse.ui
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.apulse.ui.sessions.SessionListViewModel
 import com.apulse.ui.navigation.APulseDestination
 import com.apulse.ui.requests.RequestListScreen
 import com.apulse.ui.sessions.SessionListScreen
@@ -22,6 +26,14 @@ fun APulseApp() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val context = LocalContext.current
+    val factory = remember(context) { APulseViewModelFactory(context) }
+    val sessionViewModel: SessionListViewModel = viewModel(factory = factory)
+
+    LaunchedEffect(Unit) {
+        // Ensure a default session exists to start capturing immediately
+        sessionViewModel.createDefaultSession()
+    }
 
     Scaffold(
         topBar = {
