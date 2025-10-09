@@ -128,7 +128,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'com.apulse'
             artifactId = 'apulse'
-            version = '1.0.17'
+            version = '1.0.18'
 
             afterEvaluate {
                 from components.release
