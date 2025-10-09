@@ -6,6 +6,7 @@ import com.apulse.capture.interceptor.CaptureSettings
 import com.apulse.data.db.APulseDatabase
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 
 class SettingsViewModel(
     private val captureSettings: CaptureSettings,
@@ -61,7 +62,7 @@ class SettingsViewModel(
     }
     
     fun clearAllData() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             // This is a destructive operation, so we might want to add confirmation
             database.runInTransaction {
                 // Clear all tables
@@ -72,7 +73,7 @@ class SettingsViewModel(
     }
     
     fun exportAllSessions() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             // This would implement export functionality
             // We'll implement this in the export/import todo
         }

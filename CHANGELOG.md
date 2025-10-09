@@ -70,6 +70,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.22] - 2025-10-09
+
+### Fixed
+- UI ViewModels no longer touch Room on main thread:
+  - `RequestListViewModel`: IO-thread for DAO calls, removed blocking `first()`; global search uses Flow+map
+  - `SessionListViewModel`: IO-thread for create/update/delete/activate and getActiveSession flowOn(IO)
+  - `SettingsViewModel`: IO-thread for destructive ops/export stubs
+
+### Changed
+- Docs bumped to `v1.0.22`
+
+
 ## [1.0.20] - 2025-10-09
 
 ### Fixed

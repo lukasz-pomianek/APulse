@@ -6,6 +6,7 @@ import com.apulse.data.db.APulseDatabase
 import com.apulse.data.model.NetworkRequest
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 
 class RequestListViewModel(
     private val database: APulseDatabase
@@ -35,16 +36,16 @@ class RequestListViewModel(
                 database.networkRequestDao().getRequestsForSession(sessionId)
             }
             query.isNotEmpty() -> {
-                // Global search across all sessions
-                flow {
-                    val allRequests = database.networkRequestDao().getAllRequests().first()
-                    val filtered = allRequests.filter { request ->
-                        request.url.contains(query, ignoreCase = true) ||
-                        request.host.contains(query, ignoreCase = true) ||
-                        request.method.contains(query, ignoreCase = true)
+                // Global search across all sessions without blocking the main thread
+                database.networkRequestDao().getAllRequests()
+                    .map { allRequests ->
+                        allRequests.filter { request ->
+                            request.url.contains(query, ignoreCase = true) ||
+                            request.host.contains(query, ignoreCase = true) ||
+                            request.method.contains(query, ignoreCase = true)
+                        }
                     }
-                    emit(filtered)
-                }
+                    .flowOn(Dispatchers.Default)
             }
             else -> {
                 database.networkRequestDao().getAllRequests()
@@ -60,7 +61,7 @@ class RequestListViewModel(
     
     init {
         // Load the active session by default
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val activeSession = database.sessionDao().getActiveSession()
             _selectedSessionId.value = activeSession?.id
         }
@@ -75,7 +76,7 @@ class RequestListViewModel(
     }
     
     fun clearAll() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val currentSessionId = _selectedSessionId.value
             if (currentSessionId != null) {
                 database.networkRequestDao().deleteRequestsForSession(currentSessionId)
@@ -90,13 +91,13 @@ class RequestListViewModel(
     }
     
     fun toggleBookmark(requestId: String, isBookmarked: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             database.networkRequestDao().updateBookmarkStatus(requestId, isBookmarked)
         }
     }
     
     fun addTag(requestId: String, tag: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val request = database.networkRequestDao().getRequest(requestId)
             request?.let {
                 val newTags = (it.tags + tag).distinct()

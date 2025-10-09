@@ -6,6 +6,7 @@ import com.apulse.data.db.APulseDatabase
 import com.apulse.data.model.Session
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import kotlinx.datetime.Clock
 import java.util.*
 
@@ -26,7 +27,7 @@ class SessionListViewModel(
         )
     
     fun createSession(name: String, description: String? = null) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val now = Clock.System.now()
             val session = Session(
                 id = UUID.randomUUID().toString(),
@@ -41,7 +42,7 @@ class SessionListViewModel(
     }
     
     fun activateSession(sessionId: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val session = database.sessionDao().getSession(sessionId)
             if (session != null) {
                 if (session.isActive) {
@@ -59,26 +60,24 @@ class SessionListViewModel(
     }
     
     fun deleteSession(sessionId: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             database.sessionDao().deleteSessionById(sessionId)
         }
     }
     
     fun updateSession(session: Session) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val updatedSession = session.copy(updatedAt = Clock.System.now())
             database.sessionDao().updateSession(updatedSession)
         }
     }
     
-    fun getActiveSession(): Flow<Session?> {
-        return flow {
-            emit(database.sessionDao().getActiveSession())
-        }
-    }
+    fun getActiveSession(): Flow<Session?> = flow {
+        emit(database.sessionDao().getActiveSession())
+    }.flowOn(Dispatchers.IO)
     
     fun createDefaultSession() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val existingSessions = database.sessionDao().getAllSessions().first()
             if (existingSessions.isEmpty()) {
                 val now = Clock.System.now()
