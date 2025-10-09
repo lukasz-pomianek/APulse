@@ -70,6 +70,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.20] - 2025-10-09
+
+### Fixed
+- JitPack publishing reliability: unified project `group`/`version` and module `maven-publish` setup
+- Correct JitPack coordinates in docs (`com.github.lukasz-pomianek:apulse-core` and `:apulse`)
+- Compile errors in release build:
+  - Qualified `RequestBody` in `APulseInterceptor` to avoid OkHttp collision
+  - Replaced `Instant.minus(DateTimeUnit)` usage with Kotlin Duration (`olderThanDays.days`)
+  - StateFlow typing fix in `SessionManager` (`flowOf<Session?>(null)`)
+
+### Changed
+- Simplified `jitpack.yml` to `publishToMavenLocal` for all modules
+- Bumped docs to `v1.0.20`
+
+### Notes
+- Consumers: use JitPack tag `v1.0.20`
+
 ## Future Releases
 
 ### Planned Features

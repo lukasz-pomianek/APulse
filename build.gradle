@@ -21,6 +21,9 @@ allprojects {
         google()
         mavenCentral()
     }
+    // Align group & version for JitPack. VERSION env is set by JitPack to the tag (e.g., v1.0.18)
+    group = 'com.github.lukasz-pomianek'
+    version = System.getenv("VERSION") ?: "LOCAL"
 }
 
 subprojects {

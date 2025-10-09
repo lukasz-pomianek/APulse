@@ -5,6 +5,7 @@ import com.apulse.data.model.*
 import com.apulse.service.SessionManager
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Instant
+import kotlin.time.Duration.Companion.days
 
 class APulseRepository(
     private val database: APulseDatabase,
@@ -155,7 +156,7 @@ class APulseRepository(
     
     suspend fun cleanupOldData(olderThanDays: Int = 30) {
         val cutoffTime = kotlinx.datetime.Clock.System.now()
-            .minus(olderThanDays, kotlinx.datetime.DateTimeUnit.DAY)
+            .minus(olderThanDays.days)
         
         // Clean up old requests
         database.networkRequestDao().deleteOldRequests(cutoffTime)

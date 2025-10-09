@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlin.time.Duration.Companion.days
 import java.util.*
 class SessionManager(
     private val database: APulseDatabase
@@ -26,7 +27,7 @@ class SessionManager(
             if (sessionId != null) {
                 flow { emit(database.sessionDao().getSession(sessionId)) }
             } else {
-                flowOf(null)
+                flowOf<Session?>(null)
             }
         }
         .stateIn(scope, SharingStarted.Eagerly, null)
@@ -187,7 +188,7 @@ class SessionManager(
     }
     
     suspend fun cleanupOldSessions(olderThanDays: Int = 30) {
-        val cutoffTime = Clock.System.now().minus(olderThanDays, kotlinx.datetime.DateTimeUnit.DAY)
+        val cutoffTime = Clock.System.now().minus(olderThanDays.days)
         
         // Don't delete the active session
         val activeSessionId = _currentSessionId.value

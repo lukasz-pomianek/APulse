@@ -143,12 +143,12 @@ class APulseInterceptor(
         )
     }
     
-    private fun createRequestBody(request: Request, requestId: String): RequestBody? {
+    private fun createRequestBody(request: Request, requestId: String): com.apulse.data.model.RequestBody? {
         val body = request.body ?: return null
         
         val contentLength = body.contentLength()
         if (contentLength > captureSettings.maxBodySize) {
-            return RequestBody(
+            return com.apulse.data.model.RequestBody(
                 id = UUID.randomUUID().toString(),
                 requestId = requestId,
                 bodyText = "[Body too large: ${contentLength} bytes]",
@@ -162,7 +162,7 @@ class APulseInterceptor(
             body.writeTo(buffer)
             val content = buffer.readUtf8()
             
-            RequestBody(
+            com.apulse.data.model.RequestBody(
                 id = UUID.randomUUID().toString(),
                 requestId = requestId,
                 bodyText = captureSettings.redactBodyIfNeeded(content),
@@ -170,7 +170,7 @@ class APulseInterceptor(
                 size = contentLength
             )
         } catch (e: Exception) {
-            RequestBody(
+            com.apulse.data.model.RequestBody(
                 id = UUID.randomUUID().toString(),
                 requestId = requestId,
                 bodyText = "[Error reading body: ${e.message}]",
