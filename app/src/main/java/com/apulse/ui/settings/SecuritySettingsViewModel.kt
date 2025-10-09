@@ -3,13 +3,10 @@ package com.apulse.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apulse.redaction.*
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class SecuritySettingsViewModel @Inject constructor(
+class SecuritySettingsViewModel(
     private val securityPolicyManager: SecurityPolicyManager,
     private val redactionEngine: RedactionEngine,
     private val dataEncryptionService: DataEncryptionService

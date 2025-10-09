@@ -11,16 +11,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
 import com.apulse.redaction.ComplianceMode
 import com.apulse.redaction.RedactionCategory
 import com.apulse.redaction.RedactionRule
 import com.apulse.redaction.RiskLevel
+import com.apulse.ui.APulseViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SecuritySettingsScreen(
-    viewModel: SecuritySettingsViewModel = hiltViewModel()
+    viewModel: SecuritySettingsViewModel = viewModel(factory = APulseViewModelFactory(LocalContext.current))
 ) {
     val complianceMode by viewModel.complianceMode.collectAsState()
     val enabledCategories by viewModel.enabledRedactionCategories.collectAsState()

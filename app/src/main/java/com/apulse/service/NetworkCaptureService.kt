@@ -14,7 +14,6 @@ import com.apulse.R
 import com.apulse.capture.interceptor.CaptureSettings
 import com.apulse.data.db.APulseDatabase
 // MainActivity removed - service is now library-compatible
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,9 +21,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@AndroidEntryPoint
 class NetworkCaptureService : Service() {
     
     companion object {
@@ -37,14 +34,9 @@ class NetworkCaptureService : Service() {
         const val ACTION_TOGGLE_CAPTURE = "com.apulse.TOGGLE_CAPTURE"
     }
     
-    @Inject
-    lateinit var database: APulseDatabase
-    
-    @Inject
-    lateinit var captureSettings: CaptureSettings
-    
-    @Inject
-    lateinit var sessionManager: SessionManager
+    private lateinit var database: APulseDatabase
+    private lateinit var captureSettings: CaptureSettings
+    private lateinit var sessionManager: SessionManager
     
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var statsJob: Job? = null
@@ -56,6 +48,12 @@ class NetworkCaptureService : Service() {
     
     override fun onCreate() {
         super.onCreate()
+        
+        // Initialize dependencies manually
+        database = APulseDatabase.getDatabase(this)
+        captureSettings = CaptureSettings(this)
+        sessionManager = SessionManager(database)
+        
         createNotificationChannel()
         startMonitoring()
     }

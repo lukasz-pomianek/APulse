@@ -4,13 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apulse.capture.interceptor.CaptureSettings
 import com.apulse.data.db.APulseDatabase
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class SettingsViewModel @Inject constructor(
+class SettingsViewModel(
     private val captureSettings: CaptureSettings,
     private val database: APulseDatabase
 ) : ViewModel() {

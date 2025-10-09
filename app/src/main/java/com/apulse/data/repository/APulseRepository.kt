@@ -5,11 +5,8 @@ import com.apulse.data.model.*
 import com.apulse.service.SessionManager
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Instant
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class APulseRepository @Inject constructor(
+class APulseRepository(
     private val database: APulseDatabase,
     private val sessionManager: SessionManager
 ) {

@@ -4,15 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apulse.data.db.APulseDatabase
 import com.apulse.data.model.Session
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import java.util.*
-import javax.inject.Inject
 
-@HiltViewModel
-class SessionListViewModel @Inject constructor(
+class SessionListViewModel(
     private val database: APulseDatabase
 ) : ViewModel() {
     

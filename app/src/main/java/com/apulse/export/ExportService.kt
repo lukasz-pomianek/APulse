@@ -18,11 +18,7 @@ import java.net.URL
 import java.net.URLEncoder
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import javax.inject.Inject
-import javax.inject.Singleton
-
-@Singleton
-class ExportService @Inject constructor(
+class ExportService(
     private val database: APulseDatabase,
     private val context: Context
 ) {

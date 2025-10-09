@@ -11,15 +11,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.compose.ui.platform.LocalContext
 import com.apulse.data.model.NetworkRequest
+import com.apulse.ui.APulseViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RequestListScreen(
     navController: NavController,
-    viewModel: RequestListViewModel = hiltViewModel()
+    viewModel: RequestListViewModel = viewModel(factory = APulseViewModelFactory(LocalContext.current))
 ) {
     val requests by viewModel.requests.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()

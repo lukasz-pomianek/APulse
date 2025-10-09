@@ -15,11 +15,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.*
 import java.util.zip.ZipInputStream
-import javax.inject.Inject
-import javax.inject.Singleton
-
-@Singleton
-class ImportService @Inject constructor(
+class ImportService(
     private val database: APulseDatabase,
     private val context: Context
 ) {

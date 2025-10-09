@@ -11,11 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.util.*
-import javax.inject.Inject
-import javax.inject.Singleton
-
-@Singleton
-class SessionManager @Inject constructor(
+class SessionManager(
     private val database: APulseDatabase
 ) {
     

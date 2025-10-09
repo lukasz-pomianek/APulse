@@ -12,11 +12,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import java.io.File
-import javax.inject.Inject
-import javax.inject.Singleton
-
-@Singleton
-class ShareService @Inject constructor(
+class ShareService(
     private val context: Context,
     private val exportService: ExportService
 ) {

@@ -4,13 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apulse.data.db.APulseDatabase
 import com.apulse.data.model.NetworkRequest
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class RequestListViewModel @Inject constructor(
+class RequestListViewModel(
     private val database: APulseDatabase
 ) : ViewModel() {
     

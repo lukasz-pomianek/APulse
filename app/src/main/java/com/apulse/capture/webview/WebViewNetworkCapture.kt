@@ -12,9 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import java.util.*
-import javax.inject.Inject
-
-class WebViewNetworkCapture @Inject constructor(
+class WebViewNetworkCapture(
     private val database: APulseDatabase,
     private val captureSettings: CaptureSettings
 ) {
