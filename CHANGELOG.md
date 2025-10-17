@@ -169,6 +169,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 - Bump versions to v1.0.27
 
+### Fixed
+- Add missing `remember` import in `APulseApp.kt` to fix release build
+
 ---
+
+## [1.0.28] - 2025-10-09
+
+### Fixed
+- Missing import for `remember` in `APulseApp.kt` that broke release compose compile on JitPack
+
+### Docs
+- README/INTEGRATION bumped to `v1.0.28`
+
 
 **Note**: This is the initial release. APulse is inspired by [Pulse](https://github.com/kean/Pulse) for iOS but is a completely independent implementation built specifically for Android with modern development practices.

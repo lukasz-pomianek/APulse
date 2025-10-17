@@ -41,12 +41,12 @@ repositories {
 
 dependencies {
     // Core APulse library (network capture functionality, ~50KB)
-    implementation("com.github.lukasz-pomianek:apulse-core:v1.0.27")
+    implementation("com.github.lukasz-pomianek:apulse-core:v1.0.28")
     
     // Full UI module for debug interface (~2MB) - debug builds only
-    debugImplementation("com.github.lukasz-pomianek:apulse:v1.0.27")
+    debugImplementation("com.github.lukasz-pomianek:apulse:v1.0.28")
     // Optional: Ktor plugin
-    debugImplementation("com.github.lukasz-pomianek:apulse-ktor:v1.0.27")
+    debugImplementation("com.github.lukasz-pomianek:apulse-ktor:v1.0.28")
     
     // Required OkHttp dependency
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
