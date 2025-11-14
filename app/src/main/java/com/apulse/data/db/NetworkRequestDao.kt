@@ -2,6 +2,7 @@ package com.apulse.data.db
 
 import androidx.room.*
 import com.apulse.data.model.NetworkRequest
+import com.apulse.data.model.RequestWithDetails
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 
@@ -20,7 +21,7 @@ interface NetworkRequestDao {
     @Query("""
         SELECT * FROM network_requests 
         WHERE sessionId = :sessionId 
-        AND (url LIKE '%' || :searchQuery || '%' OR host LIKE '%' || :searchQuery || '%')
+        AND url LIKE '%' || :searchQuery || '%'
         ORDER BY startTime DESC
     """)
     fun searchRequestsInSession(sessionId: String, searchQuery: String): Flow<List<NetworkRequest>>
@@ -41,6 +42,9 @@ interface NetworkRequestDao {
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertRequest(request: NetworkRequest)
+    
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertRequestSuspend(request: NetworkRequest)
     
     @Update
     fun updateRequest(request: NetworkRequest)
@@ -66,6 +70,9 @@ interface NetworkRequestDao {
     @Query("SELECT COUNT(*) FROM network_requests WHERE sessionId = :sessionId")
     fun getRequestCountForSession(sessionId: String): Int
     
+    @Query("SELECT COUNT(*) FROM network_requests WHERE sessionId = :sessionId")
+    suspend fun getRequestCountForSessionSuspend(sessionId: String): Int
+    
     @Query("SELECT SUM(requestSize + responseSize) FROM network_requests WHERE sessionId = :sessionId")
     fun getTotalSizeForSession(sessionId: String): Long?
     
@@ -74,4 +81,25 @@ interface NetworkRequestDao {
     
     @Query("SELECT DISTINCT method FROM network_requests WHERE sessionId = :sessionId ORDER BY method")
     fun getMethodsForSession(sessionId: String): Flow<List<String>>
+    
+    @Transaction
+    @Query("SELECT * FROM network_requests ORDER BY startTime DESC")
+    fun getAllRequestsWithDetails(): Flow<List<RequestWithDetails>>
+    
+    @Transaction
+    @Query("SELECT * FROM network_requests WHERE sessionId = :sessionId ORDER BY startTime DESC")
+    fun getRequestsWithDetailsForSession(sessionId: String): Flow<List<RequestWithDetails>>
+    
+    @Transaction
+    @Query("SELECT * FROM network_requests WHERE id = :requestId")
+    fun getRequestWithDetails(requestId: String): RequestWithDetails?
+    
+    @Transaction
+    @Query("""
+        SELECT * FROM network_requests 
+        WHERE sessionId = :sessionId 
+        AND (url LIKE '%' || :searchQuery || '%' OR host LIKE '%' || :searchQuery || '%')
+        ORDER BY startTime DESC
+    """)
+    fun searchRequestsWithDetailsInSession(sessionId: String, searchQuery: String): Flow<List<RequestWithDetails>>
 }

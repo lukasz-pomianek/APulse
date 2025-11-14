@@ -4,12 +4,23 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apulse.data.db.APulseDatabase
 import com.apulse.data.model.NetworkRequest
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import com.apulse.data.model.RequestWithDetails
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class RequestListViewModel(
-    private val database: APulseDatabase
+    private val database: APulseDatabase,
+    private val sessionManager: com.apulse.service.SessionManager
 ) : ViewModel() {
     
     private val _searchQuery = MutableStateFlow("")
@@ -20,39 +31,80 @@ class RequestListViewModel(
     
     private val _selectedSessionId = MutableStateFlow<String?>(null)
     
-    val requests: StateFlow<List<NetworkRequest>> = combine(
+    val requests: StateFlow<List<RequestWithDetails>> = combine(
         _searchQuery,
         _selectedSessionId
     ) { query, sessionId ->
         Pair(query, sessionId)
     }.flatMapLatest { (query, sessionId) ->
         _isLoading.value = true
-        
+
         val flow = when {
             sessionId != null && query.isNotEmpty() -> {
-                database.networkRequestDao().searchRequestsInSession(sessionId, query)
+                database.networkRequestDao().searchRequestsInSession(sessionId, query).map { requests ->
+                    // Convert basic requests to RequestWithDetails without loading bodies
+                    requests.map { request ->
+                        RequestWithDetails(
+                            request = request,
+                            requestHeaders = null, // Will load on demand
+                            requestBody = null,    // Will load on demand  
+                            responseHeaders = null, // Will load on demand
+                            responseBody = null    // Will load on demand
+                        )
+                    }
+                }
             }
             sessionId != null -> {
-                database.networkRequestDao().getRequestsForSession(sessionId)
+                database.networkRequestDao().getRequestsForSession(sessionId).map { requests ->
+                    // Convert basic requests to RequestWithDetails without loading bodies
+                    requests.map { request ->
+                        RequestWithDetails(
+                            request = request,
+                            requestHeaders = null, // Will load on demand
+                            requestBody = null,    // Will load on demand
+                            responseHeaders = null, // Will load on demand
+                            responseBody = null    // Will load on demand
+                        )
+                    }
+                }
             }
             query.isNotEmpty() -> {
                 // Global search across all sessions without blocking the main thread
                 database.networkRequestDao().getAllRequests()
                     .map { allRequests ->
                         allRequests.filter { request ->
-                            request.url.contains(query, ignoreCase = true) ||
-                            request.host.contains(query, ignoreCase = true) ||
-                            request.method.contains(query, ignoreCase = true)
+                            request.url.contains(query, ignoreCase = true)
+                        }.map { request ->
+                            RequestWithDetails(
+                                request = request,
+                                requestHeaders = null, // Will load on demand
+                                requestBody = null,    // Will load on demand  
+                                responseHeaders = null, // Will load on demand
+                                responseBody = null    // Will load on demand
+                            )
                         }
                     }
                     .flowOn(Dispatchers.Default)
             }
             else -> {
-                database.networkRequestDao().getAllRequests()
+                database.networkRequestDao().getAllRequests().map { requests ->
+                    // Convert basic requests to RequestWithDetails without loading bodies
+                    requests.map { request ->
+                        RequestWithDetails(
+                            request = request,
+                            requestHeaders = null, // Will load on demand
+                            requestBody = null,    // Will load on demand  
+                            responseHeaders = null, // Will load on demand
+                            responseBody = null    // Will load on demand
+                        )
+                    }
+                }
             }
         }
         
-        flow.onEach { _isLoading.value = false }
+        flow.onEach { requests ->
+            _isLoading.value = false
+        }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -62,8 +114,8 @@ class RequestListViewModel(
     init {
         // Load the active session by default
         viewModelScope.launch(Dispatchers.IO) {
-            val activeSession = database.sessionDao().getActiveSession()
-            _selectedSessionId.value = activeSession?.id
+            // Get or create active session ID using SessionManager
+            _selectedSessionId.value = sessionManager.getCurrentSessionId()
         }
     }
     
@@ -100,7 +152,7 @@ class RequestListViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val request = database.networkRequestDao().getRequest(requestId)
             request?.let {
-                val newTags = (it.tags + tag).distinct()
+                val newTags = ((it.tags ?: emptyList()) + tag).distinct()
                 database.networkRequestDao().updateTags(requestId, newTags)
             }
         }

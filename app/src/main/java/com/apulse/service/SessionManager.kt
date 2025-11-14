@@ -7,17 +7,46 @@ import com.apulse.data.model.SessionWithStats
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.Instant
+import kotlinx.datetime.plus
+import java.util.UUID
 import kotlin.time.Duration.Companion.days
-import java.util.*
-class SessionManager(
+
+class SessionManager private constructor(
     private val database: APulseDatabase
 ) {
     
+    companion object {
+        @Volatile
+        private var INSTANCE: SessionManager? = null
+        private val instanceLock = Any()
+        
+        fun getInstance(database: APulseDatabase): SessionManager {
+            return INSTANCE ?: synchronized(instanceLock) {
+                INSTANCE ?: SessionManager(database).also {
+                    INSTANCE = it 
+                }
+            }
+        }
+    }
+    
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val initMutex = Mutex()
+    private var isInitialized = false
     
     private val _currentSessionId = MutableStateFlow<String?>(null)
     val currentSessionId: StateFlow<String?> = _currentSessionId.asStateFlow()
@@ -35,13 +64,7 @@ class SessionManager(
     init {
         // Load the active session on init
         scope.launch {
-            val activeSession = database.sessionDao().getActiveSession()
-            _currentSessionId.value = activeSession?.id
-            
-            // Create a default session if none exist
-            if (activeSession == null) {
-                createDefaultSession()
-            }
+            ensureActiveSession()
         }
     }
     
@@ -85,6 +108,33 @@ class SessionManager(
         return true
     }
     
+    /**
+     * Ensures there is always an active session available.
+     * Thread-safe method that can be called multiple times during initialization.
+     */
+    suspend fun ensureActiveSession(): Session {
+        return initMutex.withLock {
+            if (isInitialized) {
+                // Return current active session
+                return@withLock database.sessionDao().getActiveSessionSuspend()
+                    ?: createDefaultSession()
+            }
+
+            val activeSession = database.sessionDao().getActiveSessionSuspend()
+            val result = if (activeSession == null || activeSession.createdAt.plus(30, DateTimeUnit.SECOND) < Clock.System.now()) {
+                android.util.Log.d("SessionManager", "No active session found, creating default")
+                createDefaultSession()
+            } else {
+                android.util.Log.d("SessionManager", "Found active session: ${activeSession.id}")
+                _currentSessionId.value = activeSession.id
+                activeSession
+            }
+            
+            isInitialized = true
+            result
+        }
+    }
+
     suspend fun deactivateSession(sessionId: String): Boolean {
         val session = database.sessionDao().getSession(sessionId) ?: return false
         
@@ -139,6 +189,7 @@ class SessionManager(
     suspend fun getSessionWithStats(sessionId: String): SessionWithStats? {
         val session = database.sessionDao().getSession(sessionId) ?: return null
         val requests = database.networkRequestDao().getRequestsForSession(sessionId).first()
+        val logCount = database.sessionDao().getLogCountForSession(sessionId)
         
         val successCount = requests.count { it.statusCode in 200..299 }
         val errorCount = requests.count { (it.statusCode ?: 0) >= 400 || it.error != null }
@@ -150,6 +201,7 @@ class SessionManager(
         return SessionWithStats(
             session = session,
             requestCount = requests.size,
+            logCount = logCount,
             totalSize = requests.sumOf { it.requestSize + it.responseSize },
             successCount = successCount,
             errorCount = errorCount,
@@ -159,7 +211,8 @@ class SessionManager(
     }
     
     suspend fun mergeSessionsInto(targetSessionId: String, sourceSessionIds: List<String>): Boolean {
-        val targetSession = database.sessionDao().getSession(targetSessionId) ?: return false
+        // Verify target session exists
+        database.sessionDao().getSession(targetSessionId) ?: return false
         
         // Get all source requests outside of transaction since runInTransaction is not suspend
         val allSourceRequests = mutableListOf<Pair<String, List<NetworkRequest>>>()
@@ -200,13 +253,32 @@ class SessionManager(
         }
     }
     
-    suspend fun getOrCreateCurrentSession(): Session {
+    /**
+     * Gets current session ID, creating a new session if none exists.
+     * More efficient than getOrCreateCurrentSession() when only ID is needed.
+     */
+    suspend fun getCurrentSessionId(): String {
         _currentSessionId.value?.let { sessionId ->
-            database.sessionDao().getSession(sessionId)?.let { return it }
+            // Quick check if session still exists
+            if (database.sessionDao().getSessionSuspend(sessionId) != null) {
+                return sessionId
+            }
         }
         
-        // No active session, create a default one
-        return createDefaultSession()
+        // Create new session if none exists or current is invalid
+        return getOrCreateCurrentSession().id
+    }
+    
+    suspend fun getOrCreateCurrentSession(): Session {
+        _currentSessionId.value?.let { sessionId ->
+            database.sessionDao().getSessionSuspend(sessionId)?.let {
+                return it 
+            }
+        }
+
+        android.util.Log.d("SessionManager", "No active session found, creating default one")
+        val newSession = createDefaultSession()
+        return newSession
     }
     
     private suspend fun createDefaultSession(): Session {
@@ -221,7 +293,8 @@ class SessionManager(
             tags = listOf("default", "auto-created")
         )
         
-        database.sessionDao().insertSession(defaultSession)
+        database.sessionDao().insertSessionSuspend(defaultSession)
+        database.sessionDao().deactivateOtherSessions(defaultSession.id)
         _currentSessionId.value = defaultSession.id
         
         return defaultSession

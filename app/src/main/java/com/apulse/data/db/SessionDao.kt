@@ -14,11 +14,20 @@ interface SessionDao {
     @Query("SELECT * FROM sessions WHERE id = :sessionId")
     fun getSession(sessionId: String): Session?
     
+    @Query("SELECT * FROM sessions WHERE id = :sessionId")
+    suspend fun getSessionSuspend(sessionId: String): Session?
+    
     @Query("SELECT * FROM sessions WHERE isActive = 1 ORDER BY updatedAt DESC LIMIT 1")
     fun getActiveSession(): Session?
     
+    @Query("SELECT * FROM sessions WHERE isActive = 1 ORDER BY updatedAt DESC LIMIT 1")
+    suspend fun getActiveSessionSuspend(): Session?
+    
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertSession(session: Session)
+    
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSessionSuspend(session: Session)
     
     @Update
     fun updateSession(session: Session)
@@ -43,4 +52,7 @@ interface SessionDao {
     
     @Query("SELECT SUM(totalSize) FROM sessions")
     fun getTotalSize(): Long?
+    
+    @Query("SELECT COUNT(*) FROM app_logs WHERE sessionId = :sessionId")
+    suspend fun getLogCountForSession(sessionId: String): Int
 }

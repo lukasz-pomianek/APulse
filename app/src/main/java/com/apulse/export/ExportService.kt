@@ -2,10 +2,36 @@ package com.apulse.export
 
 import android.content.Context
 import android.net.Uri
-import androidx.documentfile.provider.DocumentFile
 import com.apulse.data.db.APulseDatabase
-import com.apulse.data.model.*
-import com.apulse.export.model.*
+import com.apulse.data.model.AppMetadata
+import com.apulse.data.model.NetworkRequest
+import com.apulse.data.model.RequestBody
+import com.apulse.data.model.RequestHeaders
+import com.apulse.data.model.ResponseBody
+import com.apulse.data.model.ResponseHeaders
+import com.apulse.data.model.Session
+import com.apulse.export.model.APulseDateRange
+import com.apulse.export.model.APulseExport
+import com.apulse.export.model.APulseExportMetadata
+import com.apulse.export.model.APulseLightExport
+import com.apulse.export.model.APulseLightRequest
+import com.apulse.export.model.APulseLightSession
+import com.apulse.export.model.APulseRequestExport
+import com.apulse.export.model.APulseSessionExport
+import com.apulse.export.model.APulseSessionStats
+import com.apulse.export.model.ExportFormat
+import com.apulse.export.model.ExportOptions
+import com.apulse.export.model.HAR
+import com.apulse.export.model.HARContent
+import com.apulse.export.model.HARCreator
+import com.apulse.export.model.HAREntry
+import com.apulse.export.model.HARHeader
+import com.apulse.export.model.HARLog
+import com.apulse.export.model.HARPostData
+import com.apulse.export.model.HARQueryParam
+import com.apulse.export.model.HARRequest
+import com.apulse.export.model.HARResponse
+import com.apulse.export.model.HARTimings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -15,9 +41,9 @@ import kotlinx.serialization.json.Json
 import java.io.BufferedWriter
 import java.io.OutputStreamWriter
 import java.net.URL
-import java.net.URLEncoder
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+
 class ExportService(
     private val database: APulseDatabase,
     private val context: Context
@@ -64,7 +90,7 @@ class ExportService(
             
             // Filter by tags if specified
             options.tags?.let { requiredTags ->
-                if (session.tags.none { it in requiredTags }) return@filter false
+                if (session.tags?.none { it in requiredTags } == true) return@filter false
             }
             
             true
@@ -72,6 +98,7 @@ class ExportService(
         
         return filteredSessions.map { session ->
             val requests = database.networkRequestDao().getRequestsForSession(session.id).first()
+            val logs = database.appLogDao().getLogsForSession(session.id).first()
             val fullRequests = requests.map { request ->
                 val requestHeaders = if (options.includeHeaders) {
                     database.requestHeadersDao().getHeadersForRequest(request.id)
@@ -82,19 +109,11 @@ class ExportService(
                 } else null
                 
                 val requestBody = if (options.includeBodies) {
-                    database.requestBodyDao().getBodyForRequest(request.id)?.let { body ->
-                        if (options.maxBodySize != null && body.size > options.maxBodySize) {
-                            body.copy(bodyText = "[Body too large: ${body.size} bytes]", body = null)
-                        } else body
-                    }
+                    safeLoadRequestBody(request.id, options.maxBodySize)
                 } else null
                 
                 val responseBody = if (options.includeBodies) {
-                    database.responseBodyDao().getBodyForRequest(request.id)?.let { body ->
-                        if (options.maxBodySize != null && body.size > options.maxBodySize) {
-                            body.copy(bodyText = "[Body too large: ${body.size} bytes]", body = null)
-                        } else body
-                    }
+                    safeLoadResponseBody(request.id, options.maxBodySize)
                 } else null
                 
                 val appMetadata = if (options.includeMetadata) {
@@ -111,7 +130,7 @@ class ExportService(
                 )
             }
             
-            SessionWithFullData(session, fullRequests)
+            SessionWithFullData(session, fullRequests, logs)
         }
     }
     
@@ -152,6 +171,7 @@ class ExportService(
                             appMetadata = requestData.appMetadata
                         )
                     },
+                    logs = sessionWithData.logs,
                     stats = stats
                 )
             },
@@ -323,7 +343,7 @@ class ExportService(
                 csvBuilder.append("${request.requestSize},")
                 csvBuilder.append("${request.responseSize},")
                 csvBuilder.append("\"${request.error ?: ""}\",")
-                csvBuilder.append("\"${request.tags.joinToString(";")}\",")
+                csvBuilder.append("\"${request.tags?.joinToString(";")}\",")
                 csvBuilder.append("${request.isBookmarked}\n")
             }
         }
@@ -386,12 +406,61 @@ class ExportService(
             }
         }
     }
+    
+    /**
+     * Safely loads request body, checking size first to avoid SQLiteBlobTooBigException
+     */
+    private fun safeLoadRequestBody(requestId: String, maxBodySize: Long?): RequestBody? {
+        return try {
+            // First check the size without loading the full body
+            val bodySize = database.requestBodyDao().getBodySizeForRequest(requestId)
+            
+            if (bodySize != null && maxBodySize != null && bodySize > maxBodySize) {
+                // Create metadata-only body indicating it was too large
+                database.requestBodyDao().getBodyMetadataForRequest(requestId)?.copy(
+                    bodyText = "[Body too large: ${bodySize} bytes - limit: ${maxBodySize} bytes]",
+                    body = null
+                )
+            } else {
+                // Size is acceptable or no limit set, try to load full body
+                database.requestBodyDao().getBodyForRequest(requestId)
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("ExportService", "Failed to load request body for $requestId: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Safely loads response body, checking size first to avoid SQLiteBlobTooBigException
+     */
+    private fun safeLoadResponseBody(requestId: String, maxBodySize: Long?): ResponseBody? {
+        return try {
+            // First check the size without loading the full body
+            val bodySize = database.responseBodyDao().getBodySizeForRequest(requestId)
+            
+            if (bodySize != null && maxBodySize != null && bodySize > maxBodySize) {
+                // Create metadata-only body indicating it was too large
+                database.responseBodyDao().getBodyMetadataForRequest(requestId)?.copy(
+                    bodyText = "[Body too large: ${bodySize} bytes - limit: ${maxBodySize} bytes]",
+                    body = null
+                )
+            } else {
+                // Size is acceptable or no limit set, try to load full body
+                database.responseBodyDao().getBodyForRequest(requestId)
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("ExportService", "Failed to load response body for $requestId: ${e.message}")
+            null
+        }
+    }
 }
 
 // Data classes for internal use
 private data class SessionWithFullData(
     val session: Session,
-    val requests: List<RequestWithFullData>
+    val requests: List<RequestWithFullData>,
+    val logs: List<com.apulse.data.model.AppLog>
 )
 
 private data class RequestWithFullData(

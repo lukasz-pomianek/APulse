@@ -1,6 +1,13 @@
 package com.apulse.export.model
 
-import com.apulse.data.model.*
+import com.apulse.data.model.AppLog
+import com.apulse.data.model.AppMetadata
+import com.apulse.data.model.NetworkRequest
+import com.apulse.data.model.RequestBody
+import com.apulse.data.model.RequestHeaders
+import com.apulse.data.model.ResponseBody
+import com.apulse.data.model.ResponseHeaders
+import com.apulse.data.model.Session
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
@@ -32,7 +39,7 @@ data class APulseExportMetadata(
     val dateRange: APulseDateRange?,
     val includesBodies: Boolean = true,
     val redacted: Boolean = false,
-    val tags: List<String> = emptyList()
+    val tags: List<String>? = null,
 )
 
 @Serializable
@@ -45,6 +52,7 @@ data class APulseDateRange(
 data class APulseSessionExport(
     val session: Session,
     val requests: List<APulseRequestExport>,
+    val logs: List<AppLog> = emptyList(), // Default empty list for backward compatibility
     val stats: APulseSessionStats
 )
 
@@ -110,7 +118,7 @@ data class APulseLightRequest(
     val requestSize: Long,
     val responseSize: Long,
     val error: String? = null,
-    val tags: List<String> = emptyList(),
+    val tags: List<String>? = null,
     val isBookmarked: Boolean = false
 )
 

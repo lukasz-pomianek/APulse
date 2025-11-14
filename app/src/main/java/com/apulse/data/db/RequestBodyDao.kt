@@ -12,6 +12,9 @@ interface RequestBodyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertBody(body: RequestBody)
     
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertBodySuspend(body: RequestBody)
+    
     @Update
     fun updateBody(body: RequestBody)
     
@@ -26,4 +29,10 @@ interface RequestBodyDao {
     
     @Query("DELETE FROM request_bodies WHERE size > :maxSize")
     fun deleteLargeBodies(maxSize: Long)
+    
+    @Query("SELECT size FROM request_bodies WHERE requestId = :requestId")
+    fun getBodySizeForRequest(requestId: String): Long?
+    
+    @Query("SELECT id, requestId, size, contentType, contentEncoding, isRedacted, filePath, NULL as body, NULL as bodyText FROM request_bodies WHERE requestId = :requestId")
+    fun getBodyMetadataForRequest(requestId: String): RequestBody?
 }

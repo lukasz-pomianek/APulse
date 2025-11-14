@@ -15,6 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
 import com.apulse.data.model.NetworkRequest
+import com.apulse.data.model.RequestWithDetails
 import com.apulse.ui.APulseViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,12 +102,11 @@ fun RequestListScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
-                items(requests) { request ->
-                    RequestItem(
-                        request = request,
+                items(requests) { requestWithDetails ->
+                    RequestItemWithDetails(
+                        requestWithDetails = requestWithDetails,
                         onClick = { 
-                            // Navigate to request details
-                            // navController.navigate("request_details/${request.id}")
+                            navController.navigate("request_details/${requestWithDetails.request.id}")
                         }
                     )
                 }

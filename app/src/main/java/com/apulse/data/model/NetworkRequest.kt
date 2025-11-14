@@ -45,7 +45,7 @@ data class NetworkRequest(
     val responseSize: Long = 0, // in bytes
     val mimeType: String? = null,
     val isBookmarked: Boolean = false,
-    val tags: List<String> = emptyList(),
+    val tags: List<String>? = null,
     val notes: String? = null,
     val error: String? = null
 )

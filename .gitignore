@@ -1,0 +1,19 @@
+# Build directories
+build/
+**/build/
+
+# Gradle
+.gradle/
+**/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration
+local.properties
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Kotlin
+*.kotlin_module

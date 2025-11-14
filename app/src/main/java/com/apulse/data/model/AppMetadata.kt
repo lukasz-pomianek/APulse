@@ -34,5 +34,5 @@ data class AppMetadata(
     val osVersion: String? = null,
     val appVersion: String? = null,
     val threadName: String? = null,
-    val customData: Map<String, String> = emptyMap()
+    val customData: Map<String, String>? = null
 )

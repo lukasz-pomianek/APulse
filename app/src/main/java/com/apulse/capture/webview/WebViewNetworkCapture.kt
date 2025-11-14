@@ -7,6 +7,7 @@ import android.webkit.WebViewClient
 import com.apulse.capture.interceptor.CaptureSettings
 import com.apulse.data.db.APulseDatabase
 import com.apulse.data.model.*
+import com.apulse.service.SessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,6 +19,7 @@ class WebViewNetworkCapture(
 ) {
     
     private val scope = CoroutineScope(Dispatchers.IO)
+    private val sessionManager = SessionManager.getInstance(database)
     
     fun createWebViewClient(): WebViewClient {
         return APulseWebViewClient()
@@ -42,7 +44,7 @@ class WebViewNetworkCapture(
                     // Create network request entry
                     val networkRequest = NetworkRequest(
                         id = requestId,
-                        sessionId = getOrCreateCurrentSession().id,
+                        sessionId = sessionManager.getCurrentSessionId(),
                         url = request.url.toString(),
                         method = request.method ?: "GET",
                         protocol = request.url.scheme,
@@ -82,25 +84,6 @@ class WebViewNetworkCapture(
             }
         }
         
-        private suspend fun getOrCreateCurrentSession(): Session {
-            val activeSession = database.sessionDao().getActiveSession()
-            
-            return if (activeSession != null) {
-                activeSession
-            } else {
-                val now = Clock.System.now()
-                val newSession = Session(
-                    id = UUID.randomUUID().toString(),
-                    name = "WebView Session ${now}",
-                    createdAt = now,
-                    updatedAt = now,
-                    isActive = true,
-                    tags = listOf("webview")
-                )
-                database.sessionDao().insertSession(newSession)
-                database.sessionDao().deactivateOtherSessions(newSession.id)
-                newSession
-            }
-        }
+
     }
 }

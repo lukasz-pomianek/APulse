@@ -12,6 +12,9 @@ interface RequestHeadersDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertHeaders(headers: RequestHeaders)
     
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHeadersSuspend(headers: RequestHeaders)
+    
     @Update
     fun updateHeaders(headers: RequestHeaders)
     

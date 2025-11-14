@@ -1,12 +1,21 @@
 package com.apulse.data.db
 
+import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import android.content.Context
-import com.apulse.data.model.*
+import com.apulse.data.model.AppLog
+import com.apulse.data.model.AppMetadata
+import com.apulse.data.model.NetworkRequest
+import com.apulse.data.model.RequestBody
+import com.apulse.data.model.RequestHeaders
+import com.apulse.data.model.ResponseBody
+import com.apulse.data.model.ResponseHeaders
+import com.apulse.data.model.Session
+import kotlinx.serialization.InternalSerializationApi
 
+@OptIn(InternalSerializationApi::class)
 @Database(
     entities = [
         Session::class,
@@ -15,10 +24,11 @@ import com.apulse.data.model.*
         ResponseHeaders::class,
         RequestBody::class,
         ResponseBody::class,
-        AppMetadata::class
+        AppMetadata::class,
+        AppLog::class
     ],
-    version = 1,
-    exportSchema = false
+    version = 3,
+    exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class APulseDatabase : RoomDatabase() {
@@ -30,6 +40,7 @@ abstract class APulseDatabase : RoomDatabase() {
     abstract fun requestBodyDao(): RequestBodyDao
     abstract fun responseBodyDao(): ResponseBodyDao
     abstract fun appMetadataDao(): AppMetadataDao
+    abstract fun appLogDao(): AppLogDao
     
     companion object {
         const val DATABASE_NAME = "apulse_database"

@@ -52,7 +52,7 @@ class NetworkCaptureService : Service() {
         // Initialize dependencies manually
         database = APulseDatabase.getDatabase(this)
         captureSettings = CaptureSettings(this)
-        sessionManager = SessionManager(database)
+        sessionManager = SessionManager.getInstance(database)
         
         createNotificationChannel()
         startMonitoring()

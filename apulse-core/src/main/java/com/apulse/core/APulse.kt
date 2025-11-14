@@ -12,9 +12,11 @@ import okhttp3.Interceptor
  */
 object APulse {
     
+    @Volatile
     private var isInitialized = false
     private lateinit var appContext: Context
     private var config = APulseConfig()
+    private val initLock = Any()
     
     /**
      * Initialize APulse with application context and optional configuration
@@ -25,15 +27,21 @@ object APulse {
     fun initialize(context: Context, configure: APulseConfig.() -> Unit = {}) {
         if (isInitialized) return
         
-        appContext = context.applicationContext
-        config.apply(configure)
-        isInitialized = true
-
-        // Allow the UI/app module to perform additional initialization (e.g., ensure session exists)
-        try {
-            APulseInitializer.initialize(appContext, config)
-        } catch (_: Exception) {
-            // Safe to ignore when UI module is not present
+        synchronized(initLock) {
+            // Double-checked locking pattern
+            if (isInitialized) return
+            
+            appContext = context.applicationContext
+            config.apply(configure)
+            
+            // Allow the UI/app module to perform additional initialization (e.g., ensure session exists)
+            try {
+                APulseInitializer.initialize(appContext, config)
+            } catch (_: Exception) {
+                // Safe to ignore when UI module is not present
+            }
+            
+            isInitialized = true
         }
     }
     
@@ -96,6 +104,29 @@ object APulse {
      * Get current configuration
      */
     fun getConfig(): APulseConfig = config
+    
+    /**
+     * Create APulse log interceptor for application logging
+     * 
+     * @param context Application context
+     * @param excludedTags List of tags to exclude from logging (default: empty)
+     * @return Log interceptor that captures and stores application logs
+     */
+    fun createLogInterceptor(context: Context, excludedTags: List<String> = emptyList()): APulseLogInterface {
+        if (!isInitialized) {
+            initialize(context)
+        }
+        
+        return APulseLogFactory.create(context, config, excludedTags)
+    }
+    
+    fun logEvent(eventName: String, data: Map<String, Any>) {
+        try {
+            android.util.Log.d("APulse", "logEvent $eventName $data")
+        } catch (_: Exception) {
+            // Safe to ignore when UI module is not present
+        }
+    }
 }
 
 /**
@@ -133,6 +164,37 @@ interface APulseInterceptorFactory {
 }
 
 /**
+ * Interface for APulse logging functionality
+ */
+interface APulseLogInterface {
+    fun log(priority: Int, tag: String?, message: String, throwable: Throwable? = null)
+    fun d(tag: String?, message: String)
+    fun i(tag: String?, message: String)
+    fun w(tag: String?, message: String)
+    fun e(tag: String?, message: String, throwable: Throwable? = null)
+}
+
+/**
+ * Factory interface for creating APulse log interceptors
+ */
+interface APulseLogFactory {
+    companion object {
+        fun create(context: Context, config: APulseConfig, excludedTags: List<String> = emptyList()): APulseLogInterface {
+            return try {
+                val factoryClass = Class.forName("com.apulse.logging.APulseLogFactoryImpl")
+                val factory = factoryClass.getDeclaredConstructor().newInstance() as APulseLogFactory
+                factory.createLogInterceptor(context, config, excludedTags)
+            } catch (e: Exception) {
+                // Fallback for when full APulse is not available
+                NoOpLogInterceptor()
+            }
+        }
+    }
+    
+    fun createLogInterceptor(context: Context, config: APulseConfig, excludedTags: List<String> = emptyList()): APulseLogInterface
+}
+
+/**
  * Optional initializer hook implemented in the UI module to perform
  * additional setup at app start (e.g., create a default active session).
  */
@@ -158,5 +220,30 @@ interface APulseInitializer {
 private class NoOpInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
         return chain.proceed(chain.request())
+    }
+}
+
+/**
+ * No-op log interceptor for when APulse UI is not included
+ */
+private class NoOpLogInterceptor : APulseLogInterface {
+    override fun log(priority: Int, tag: String?, message: String, throwable: Throwable?) {
+        // No-op - could optionally delegate to Android Log
+    }
+    
+    override fun d(tag: String?, message: String) {
+        // No-op
+    }
+    
+    override fun i(tag: String?, message: String) {
+        // No-op  
+    }
+    
+    override fun w(tag: String?, message: String) {
+        // No-op
+    }
+    
+    override fun e(tag: String?, message: String, throwable: Throwable?) {
+        // No-op
     }
 }

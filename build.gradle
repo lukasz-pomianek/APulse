@@ -1,6 +1,7 @@
 buildscript {
-    ext.kotlin_version = "1.9.20"
-    ext.agp_version = "8.2.0"
+    ext.kotlin_version = "1.9.25"
+    ext.agp_version = "8.11.1"
+    ext.ksp_version = "1.9.25-1.0.20"
     
     repositories {
         google()
@@ -12,6 +13,7 @@ buildscript {
         classpath "com.android.tools.build:gradle:$agp_version"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
+        classpath "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:$ksp_version"
         classpath "com.google.dagger:hilt-android-gradle-plugin:2.48.1"
     }
 }

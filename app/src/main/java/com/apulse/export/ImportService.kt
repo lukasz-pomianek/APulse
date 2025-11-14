@@ -71,34 +71,24 @@ class ImportService(
     }
     
     private suspend fun parseAndImport(content: String, options: ImportOptions): ImportResult {
-        // Try to determine format and parse accordingly
-        return when (detectFormat(content)) {
-            DetectedFormat.APULSE_FULL -> importAPulseFull(content, options)
-            DetectedFormat.APULSE_LIGHT -> importAPulseLight(content, options)
-            DetectedFormat.HAR -> importHAR(content, options)
-            DetectedFormat.UNKNOWN -> throw Exception("Unknown file format")
+        // Assume all imports are APulse full format
+        return try {
+            // Try to parse as APulse full format - this validates the format
+            json.decodeFromString<APulseExport>(content)
+            importAPulseFull(content, options)
+        } catch (e: Exception) {
+            android.util.Log.e("ImportService", "Failed to parse as APulse format", e)
+            throw Exception("Invalid APulse file format: ${e.message}")
         }
     }
     
-    private fun detectFormat(content: String): DetectedFormat {
-        return try {
-            val jsonElement = Json.parseToJsonElement(content)
-            
-            when {
-                content.contains("\"log\"") && content.contains("\"entries\"") -> DetectedFormat.HAR
-                content.contains("\"version\"") && content.contains("\"sessions\"") && content.contains("APulseExport") -> DetectedFormat.APULSE_FULL
-                content.contains("\"version\"") && content.contains("\"sessions\"") -> DetectedFormat.APULSE_LIGHT
-                else -> DetectedFormat.UNKNOWN
-            }
-        } catch (e: SerializationException) {
-            DetectedFormat.UNKNOWN
-        }
-    }
+
     
     private suspend fun importAPulseFull(content: String, options: ImportOptions): ImportResult {
         val exportData = json.decodeFromString<APulseExport>(content)
         val importedSessions = mutableListOf<String>()
         val importedRequests = mutableListOf<String>()
+        val logsToImport = mutableListOf<Pair<String, List<AppLog>>>() // sessionId to logs
         
         database.runInTransaction {
             exportData.sessions.forEach { sessionExport ->
@@ -171,12 +161,30 @@ class ImportService(
                         database.appMetadataDao().insertMetadata(importedMetadata)
                     }
                 }
+                
+                // Collect logs for later import (outside transaction)
+                if (sessionExport.logs.isNotEmpty()) {
+                    logsToImport.add(sessionId to sessionExport.logs)
+                }
+            }
+        }
+        
+        // Import logs outside of transaction (suspend functions not allowed in transaction)
+        logsToImport.forEach { (sessionId, logs) ->
+            logs.forEach { logExport ->
+                val newLogId = UUID.randomUUID().toString()
+                val importedLog = logExport.copy(
+                    id = newLogId,
+                    sessionId = sessionId
+                )
+                database.appLogDao().insertLog(importedLog)
             }
         }
         
         return ImportResult(
             sessionsImported = importedSessions.size,
             requestsImported = importedRequests.size,
+            logsImported = logsToImport.sumOf { it.second.size },
             importedSessionIds = importedSessions,
             format = "APulse Full",
             warnings = emptyList()
@@ -397,14 +405,9 @@ data class ImportOptions(
 data class ImportResult(
     val sessionsImported: Int,
     val requestsImported: Int,
+    val logsImported: Int = 0,
     val importedSessionIds: List<String>,
     val format: String,
     val warnings: List<String> = emptyList()
 )
 
-private enum class DetectedFormat {
-    APULSE_FULL,
-    APULSE_LIGHT,
-    HAR,
-    UNKNOWN
-}

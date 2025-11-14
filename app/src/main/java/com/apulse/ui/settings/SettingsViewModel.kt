@@ -4,13 +4,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apulse.capture.interceptor.CaptureSettings
 import com.apulse.data.db.APulseDatabase
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import com.apulse.export.ShareService
+import com.apulse.export.model.ExportFormat
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     private val captureSettings: CaptureSettings,
-    private val database: APulseDatabase
+    private val database: APulseDatabase,
+    private val shareService: ShareService,
 ) : ViewModel() {
     
     val captureEnabled: StateFlow<Boolean> = flow {
@@ -74,8 +80,10 @@ class SettingsViewModel(
     
     fun exportAllSessions() {
         viewModelScope.launch(Dispatchers.IO) {
-            // This would implement export functionality
-            // We'll implement this in the export/import todo
+            /// todo
+            shareService.shareAllSessions(
+                format = ExportFormat.CSV,
+            )
         }
     }
 }

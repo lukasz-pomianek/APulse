@@ -12,6 +12,9 @@ interface ResponseBodyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertBody(body: ResponseBody)
     
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertBodySuspend(body: ResponseBody)
+    
     @Update
     fun updateBody(body: ResponseBody)
     
@@ -32,4 +35,10 @@ interface ResponseBodyDao {
     
     @Query("SELECT * FROM response_bodies WHERE isJson = 1 ORDER BY requestId")
     fun getJsonBodies(): List<ResponseBody>
+    
+    @Query("SELECT size FROM response_bodies WHERE requestId = :requestId")
+    fun getBodySizeForRequest(requestId: String): Long?
+    
+    @Query("SELECT id, requestId, size, contentType, contentEncoding, isRedacted, filePath, isImage, isJson, isXml, NULL as body, NULL as bodyText FROM response_bodies WHERE requestId = :requestId")
+    fun getBodyMetadataForRequest(requestId: String): ResponseBody?
 }

@@ -3,9 +3,10 @@ package com.apulse.data.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.datetime.Instant
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.Serializable
 
-@Entity(tableName = "sessions")
+@InternalSerializationApi @Entity(tableName = "sessions")
 @Serializable
 data class Session(
     @PrimaryKey
@@ -17,6 +18,6 @@ data class Session(
     val isActive: Boolean = true,
     val totalRequests: Int = 0,
     val totalSize: Long = 0, // in bytes
-    val tags: List<String> = emptyList(),
-    val metadata: Map<String, String> = emptyMap()
+    val tags: List<String>? = null,
+    val metadata: Map<String, String>? = null
 )

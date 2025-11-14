@@ -16,11 +16,8 @@ class ShareService(
     private val context: Context,
     private val exportService: ExportService
 ) {
-    
-    companion object {
-        private const val AUTHORITY = "com.apulse.fileprovider"
-    }
-    
+    private val AUTHORITY = "${context.packageName}.fileprovider"
+
     suspend fun shareSession(
         sessionId: String,
         format: ExportFormat = ExportFormat.APULSE_LIGHT,
@@ -82,6 +79,32 @@ class ShareService(
         )
         
         val fileName = generateFileName(format, suffix = "all")
+        val file = createTempFile(fileName)
+        val uri = FileProvider.getUriForFile(context, AUTHORITY, file)
+        
+        val result = exportService.exportSessions(options, uri)
+        result.getOrThrow()
+        
+        createShareIntent(uri, format, fileName)
+    }
+    
+    suspend fun shareSessionWithOptions(
+        sessionIds: List<String>,
+        format: ExportFormat = ExportFormat.APULSE_FULL,
+        includeHeaders: Boolean = true,
+        includeBodies: Boolean = true,
+        maxBodySize: Long? = null
+    ): Intent = withContext(Dispatchers.IO) {
+        val options = ExportOptions(
+            format = format,
+            includeHeaders = includeHeaders,
+            includeBodies = includeBodies,
+            redactSensitiveData = true,
+            sessionIds = sessionIds,
+            maxBodySize = maxBodySize
+        )
+        
+        val fileName = generateFileName(format, sessionIds.size)
         val file = createTempFile(fileName)
         val uri = FileProvider.getUriForFile(context, AUTHORITY, file)
         
@@ -156,7 +179,7 @@ class ShareService(
         }
         
         val extension = when (format) {
-            ExportFormat.APULSE_FULL -> "apulse"
+            ExportFormat.APULSE_FULL -> "zip"  // ZIP file containing JSON data
             ExportFormat.APULSE_LIGHT -> "json"
             ExportFormat.HAR -> "har"
             ExportFormat.JSON -> "json"

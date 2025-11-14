@@ -2,18 +2,23 @@ package com.apulse.capture.interceptor
 
 import android.content.Context
 import com.apulse.data.db.APulseDatabase
-import com.apulse.data.model.*
+import com.apulse.data.model.AppMetadata
+import com.apulse.data.model.NetworkRequest
+import com.apulse.data.model.RequestHeaders
+import com.apulse.data.model.ResponseHeaders
+import com.apulse.service.SessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import okhttp3.*
+import okhttp3.Interceptor
+import okhttp3.Request
+import okhttp3.Response
 import okio.Buffer
-import okio.BufferedSource
 import java.io.IOException
-import java.net.URL
-import java.util.*
+import java.util.UUID
+
 class APulseInterceptor(
     private val context: Context,
     private val database: APulseDatabase,
@@ -21,6 +26,7 @@ class APulseInterceptor(
 ) : Interceptor {
     
     private val scope = CoroutineScope(Dispatchers.IO)
+    private val sessionManager = SessionManager.getInstance(database)
     
     companion object {
         private const val MAX_CONTENT_LENGTH = 10 * 1024 * 1024L // 10MB default
@@ -51,15 +57,20 @@ class APulseInterceptor(
         // Save request data to database
         scope.launch {
             try {
-                val currentSession = getOrCreateCurrentSession()
-                val requestWithSession = networkRequest.copy(sessionId = currentSession.id)
+                val currentSessionId = sessionManager.getCurrentSessionId()
+                val networkRequestWithSessionId = networkRequest.copy(sessionId = currentSessionId)
                 
-                database.networkRequestDao().insertRequest(requestWithSession)
-                requestHeaders?.let { database.requestHeadersDao().insertHeaders(it) }
-                requestBody?.let { database.requestBodyDao().insertBody(it) }
-                appMetadata?.let { database.appMetadataDao().insertMetadata(it) }
+                database.networkRequestDao().insertRequest(networkRequestWithSessionId)
+                requestHeaders?.let { 
+                    database.requestHeadersDao().insertHeaders(it)
+                }
+                requestBody?.let { 
+                    database.requestBodyDao().insertBody(it)
+                }
+                database.appMetadataDao().insertMetadata(appMetadata)
             } catch (e: Exception) {
                 // Log error but don't fail the request
+                android.util.Log.e("APulseInterceptor", "Error 1 $e")
                 e.printStackTrace()
             }
         }
@@ -68,6 +79,7 @@ class APulseInterceptor(
         val response = try {
             chain.proceed(request)
         } catch (e: IOException) {
+            android.util.Log.e("APulseInterceptor", "Error 2 $e")
             // Capture network error
             scope.launch {
                 updateRequestWithError(requestId, e, startTime)
@@ -84,6 +96,7 @@ class APulseInterceptor(
         
         scope.launch {
             try {
+                val currentSessionId = sessionManager.getCurrentSessionId()
                 // Update request with response details
                 val updatedRequest = networkRequest.copy(
                     endTime = endTime,
@@ -91,16 +104,22 @@ class APulseInterceptor(
                     statusCode = response.code,
                     statusMessage = response.message,
                     responseSize = response.body?.contentLength() ?: 0L,
-                    mimeType = response.body?.contentType()?.toString()
+                    mimeType = response.body?.contentType()?.toString(),
+                    sessionId = currentSessionId,
                 )
                 
                 database.networkRequestDao().updateRequest(updatedRequest)
-                responseHeaders?.let { database.responseHeadersDao().insertHeaders(it) }
-                responseBody?.let { database.responseBodyDao().insertBody(it) }
+                responseHeaders?.let { 
+                    database.responseHeadersDao().insertHeaders(it)
+                }
+                responseBody?.let { 
+                    database.responseBodyDao().insertBody(it)
+                }
                 
                 // Update session statistics
                 updateSessionStats(updatedRequest.sessionId)
             } catch (e: Exception) {
+                android.util.Log.e("APulseInterceptor", "Error 3 $e")
                 e.printStackTrace()
             }
         }
@@ -200,7 +219,9 @@ class APulseInterceptor(
     }
     
     private fun createResponseBody(response: Response, requestId: String): com.apulse.data.model.ResponseBody? {
-        val body = response.body ?: return null
+        val body = response.body ?: run {
+            return null
+        }
         val contentType = body.contentType()
         val contentLength = body.contentLength()
         
@@ -266,25 +287,7 @@ class APulseInterceptor(
         )
     }
     
-    private suspend fun getOrCreateCurrentSession(): Session {
-        val activeSession = database.sessionDao().getActiveSession()
-        
-        return if (activeSession != null) {
-            activeSession
-        } else {
-            val now = Clock.System.now()
-            val newSession = Session(
-                id = UUID.randomUUID().toString(),
-                name = "Session ${now}",
-                createdAt = now,
-                updatedAt = now,
-                isActive = true
-            )
-            database.sessionDao().insertSession(newSession)
-            database.sessionDao().deactivateOtherSessions(newSession.id)
-            newSession
-        }
-    }
+
     
     private suspend fun updateRequestWithError(requestId: String, error: IOException, startTime: Instant) {
         try {
