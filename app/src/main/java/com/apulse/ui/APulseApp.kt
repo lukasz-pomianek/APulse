@@ -74,20 +74,23 @@ fun APulseApp() {
         bottomBar = {
             NavigationBar {
                 APulseDestination.values().forEach { destination ->
-                    NavigationBarItem(
-                        icon = { Icon(destination.icon, contentDescription = null) },
-                        label = { Text(destination.title) },
-                        selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true,
-                        onClick = {
-                            navController.navigate(destination.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                    // Hide Settings from navigation
+                    if (destination != APulseDestination.Settings) {
+                        NavigationBarItem(
+                            icon = { Icon(destination.icon, contentDescription = null) },
+                            label = { Text(destination.title) },
+                            selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true,
+                            onClick = {
+                                navController.navigate(destination.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

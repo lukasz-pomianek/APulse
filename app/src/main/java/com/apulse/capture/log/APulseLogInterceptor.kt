@@ -60,19 +60,15 @@ class APulseLogInterceptor private constructor(
     ) {
         // Check if this tag should be excluded from logging
         if (tag != null && excludedTags.contains(tag)) {
-            Log.d("APulseLogInterceptor", "Skipping log with excluded tag: $tag")
             return
         }
         if (sessionManager.currentSession.value == null) {
-            Log.d("APulseLogInterceptor", "No session return")
             return
         }
 
         scope.launch {
             try {
-                Log.d("APulseLogInterceptor", "Capturing log: priority=$priority, tag=$tag, message=$message")
                 val currentSessionId = sessionManager.getCurrentSessionId()
-                Log.d("APulseLogInterceptor", "Got current session: $currentSessionId")
                 
                 val appLog = createAppLog(
                     sessionId = currentSessionId,
@@ -82,13 +78,10 @@ class APulseLogInterceptor private constructor(
                     throwable = t
                 )
                 
-                Log.d("APulseLogInterceptor", "Created AppLog with ID: ${appLog.id}")
                 database.appLogDao().insertLog(appLog)
-                Log.d("APulseLogInterceptor", "Successfully inserted log to database")
             } catch (e: Exception) {
                 // Fallback to system log if our logging fails
                 Log.e("APulseLogInterceptor", "Failed to capture log", e)
-                Log.println(priority, tag ?: "APulse", message)
                 t?.printStackTrace()
             }
         }
