@@ -174,6 +174,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.30] - 2025-11-14
+
+### Docs
+- README/INTEGRATION bumped to `v1.0.30`
+
+---
+
+## [1.0.29] - 2025-10-09
+
+### Added
+- Application logging system with integrated session management
+- `APulseLogInterface` for structured logging (DEBUG, INFO, WARN, ERROR levels)
+- Automatic metadata capture (timestamp, thread, class, method, line number)
+- Stack trace support for exceptions
+- Log filtering and search functionality in UI
+
+### Docs
+- README updated with logging documentation and usage examples
+- Added logging integration guide
+
+---
+
 ## [1.0.28] - 2025-10-09
 
 ### Fixed
