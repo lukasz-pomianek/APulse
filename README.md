@@ -10,6 +10,14 @@ A comprehensive network monitoring and debugging tool for Android applications. 
 - **WebView Support**: Optional Chromium NetLog bridge for WebView network capture
 - **Real-time Monitoring**: Live network activity tracking with notifications
 
+### 📝 Application Logging
+- **Unified Logging**: Integrated logging system that stores application logs alongside network requests
+- **Rich Metadata**: Automatic capture of timestamp, thread name, class, method, and line number
+- **Log Levels**: Support for DEBUG, INFO, WARN, and ERROR levels with visual color coding
+- **Session Integration**: Logs automatically linked to current APulse session for contextual debugging
+- **Advanced Filtering**: Filter by log level, tags, and text search across messages
+- **Exception Tracking**: Automatic stack trace capture and display for errors
+
 ### 📊 Data Management
 - **Session-based Organization**: Group network requests into named, savable sessions
 - **Smart Storage**: Room database with LRU caching and automatic pruning
@@ -40,13 +48,13 @@ repositories {
 }
 
 dependencies {
-    // Core APulse library (network capture functionality, ~50KB)
-    implementation("com.github.lukasz-pomianek:apulse-core:v1.0.28")
-    
+    // Core APulse library (network capture + logging functionality, ~50KB)
+    implementation("com.github.lukasz-pomianek:apulse-core:v1.0.29")
+
     // Full UI module for debug interface (~2MB) - debug builds only
-    debugImplementation("com.github.lukasz-pomianek:apulse:v1.0.28")
+    debugImplementation("com.github.lukasz-pomianek:apulse:v1.0.29")
     // Optional: Ktor plugin
-    debugImplementation("com.github.lukasz-pomianek:apulse-ktor:v1.0.28")
+    debugImplementation("com.github.lukasz-pomianek:apulse-ktor:v1.0.29")
     
     // Required OkHttp dependency
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
@@ -73,6 +81,31 @@ val okHttpClient = OkHttpClient.Builder()
 **Done!** APulse will capture all network traffic. Launch UI with `APulse.launch(context)`.
 
 > 📖 **Detailed integration guide**: See [INTEGRATION.md](INTEGRATION.md) for real-world examples, build variants, and troubleshooting.
+
+### Optional: Application Logging
+
+APulse now includes a complete logging system that integrates with the session management:
+
+```kotlin
+// Create a logger instance
+val logger = APulse.createLogInterceptor(context)
+
+// Use logging methods (similar to Android Log API)
+logger.d("MyTag", "Debug message")
+logger.i("MyTag", "Info message")
+logger.w("MyTag", "Warning message")
+logger.e("MyTag", "Error with exception", exception)
+
+// All logs are automatically saved to the APulse database
+// and linked to the current session for unified debugging
+```
+
+**Benefits:**
+- Logs are stored in the same database as network requests
+- Automatic session association for contextual debugging
+- View logs in the APulse UI alongside network traffic
+- Filter by level, tag, or search text
+- Full stack traces for exceptions
 
 ## Usage
 
@@ -275,6 +308,9 @@ APulse.initialize(context: Context, config: APulseConfig.() -> Unit)
 // Interceptor creation
 APulse.createInterceptor(context: Context): Interceptor
 
+// Logging
+APulse.createLogInterceptor(context: Context, excludedTags: List<String> = emptyList()): APulseLogInterface
+
 // UI launches
 APulse.launch(context: Context)
 APulse.launchCurrentSession(context: Context)
@@ -295,6 +331,19 @@ APulse.importFile(uri: Uri, callback: (Result<ImportResult>) -> Unit)
 APulse.configure(config: APulseConfig.() -> Unit)
 APulse.setComplianceMode(mode: ComplianceMode)
 APulse.applySecurityPolicy(policy: SecurityPolicy)
+```
+
+### APulseLogInterface Methods
+
+```kotlin
+// Log methods (similar to android.util.Log)
+logger.d(tag: String, message: String)  // Debug
+logger.i(tag: String, message: String)  // Info
+logger.w(tag: String, message: String)  // Warning
+logger.e(tag: String, message: String, throwable: Throwable? = null)  // Error
+
+// Generic log method
+logger.log(priority: Int, tag: String, message: String, throwable: Throwable? = null)
 ```
 
 ### Data Models
