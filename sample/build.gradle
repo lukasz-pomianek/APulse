@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.compose'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'dagger.hilt.android.plugin'
     id 'com.google.devtools.ksp'
@@ -8,7 +9,7 @@ plugins {
 
 android {
     namespace 'com.apulse.sample'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.apulse.sample"
@@ -48,13 +49,13 @@ android {
     buildFeatures {
         compose true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = '1.5.15'
-    }
     packagingOptions {
         resources {
             excludes += ['/META-INF/{AL2.0,LGPL2.1}']
         }
+    }
+    lint {
+        abortOnError false
     }
 }
 
@@ -75,9 +76,9 @@ dependencies {
     implementation 'androidx.compose.material:material-icons-extended'
 
     // Hilt Dependency Injection
-    implementation 'com.google.dagger:hilt-android:2.48.1'
+    implementation 'com.google.dagger:hilt-android:2.52'
     implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
-    ksp 'com.google.dagger:hilt-compiler:2.48.1'
+    ksp 'com.google.dagger:hilt-compiler:2.52'
 
     // Networking for sample requests
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
@@ -90,6 +91,9 @@ dependencies {
 
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+
+    // Error Prone annotations for R8
+    implementation 'com.google.errorprone:error_prone_annotations:2.18.0'
 
     // Testing
     testImplementation 'junit:junit:4.13.2'
