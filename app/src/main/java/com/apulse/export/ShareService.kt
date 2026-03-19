@@ -8,7 +8,7 @@ import com.apulse.export.model.ExportFormat
 import com.apulse.export.model.ExportOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import java.io.File

@@ -238,7 +238,7 @@ class SecurityPolicyManager(
         return ComplianceReport(
             policyVersion = policy.version,
             complianceMode = complianceMode,
-            timestamp = kotlinx.datetime.Clock.System.now(),
+            timestamp = kotlin.time.Clock.System.now(),
             redactionEnabled = policy.autoRedactionEnabled,
             dataRetentionDays = policy.maxDataRetentionDays,
             httpsEnforced = policy.enforceHttpsOnly,
@@ -334,7 +334,7 @@ enum class ComplianceMode(val displayName: String) {
 data class SecurityEvent(
     val type: SecurityEventType,
     val description: String,
-    val timestamp: kotlinx.datetime.Instant = kotlinx.datetime.Clock.System.now(),
+    val timestamp: kotlin.time.Instant = kotlin.time.Clock.System.now(),
     val url: String? = null,
     val action: String? = null
 )
@@ -350,7 +350,7 @@ enum class SecurityEventType {
 
 data class RetentionViolation(
     val sessionId: String,
-    val createdAt: kotlinx.datetime.Instant,
+    val createdAt: kotlin.time.Instant,
     val daysOld: Int,
     val policyLimit: Int
 )
@@ -359,7 +359,7 @@ data class RetentionViolation(
 data class ComplianceReport(
     val policyVersion: String,
     val complianceMode: ComplianceMode,
-    val timestamp: kotlinx.datetime.Instant,
+    val timestamp: kotlin.time.Instant,
     val redactionEnabled: Boolean,
     val dataRetentionDays: Int,
     val httpsEnforced: Boolean,

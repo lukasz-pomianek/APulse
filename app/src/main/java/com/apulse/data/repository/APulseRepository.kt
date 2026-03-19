@@ -378,7 +378,7 @@ class APulseRepository(
         database.networkRequestDao().deleteRequestsForSession(sessionId)
         
         // Reset session stats
-        database.sessionDao().updateSessionStats(sessionId, 0, 0, kotlinx.datetime.Clock.System.now())
+        database.sessionDao().updateSessionStats(sessionId, 0, 0, kotlin.time.Clock.System.now())
     }
     
     suspend fun clearAllData() {
@@ -401,7 +401,7 @@ class APulseRepository(
     }
     
     suspend fun cleanupOldData(olderThanDays: Int = 30) {
-        val cutoffTime = kotlinx.datetime.Clock.System.now()
+        val cutoffTime = kotlin.time.Clock.System.now()
             .minus(olderThanDays.days)
         
         // Clean up old requests

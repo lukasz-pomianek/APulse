@@ -3,7 +3,7 @@ package com.apulse.data.db
 import androidx.room.*
 import com.apulse.data.model.AppLog
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Dao
 interface AppLogDao {

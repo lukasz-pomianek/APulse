@@ -8,7 +8,7 @@ import com.apulse.data.model.RequestHeaders
 import com.apulse.data.model.ResponseBody
 import com.apulse.data.model.ResponseHeaders
 import com.apulse.data.model.Session
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 
 /**

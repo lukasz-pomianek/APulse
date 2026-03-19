@@ -433,14 +433,14 @@ private fun LogItemCard(
 }
 
 // Helper function to format detailed timestamp with milliseconds
-private fun formatDetailedTimestamp(instant: kotlinx.datetime.Instant): String {
+private fun formatDetailedTimestamp(instant: kotlin.time.Instant): String {
     val date = Date(instant.toEpochMilliseconds())
     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
     return formatter.format(date)
 }
 
 // Helper function to format session creation date
-private fun formatSessionDate(instant: kotlinx.datetime.Instant): String {
+private fun formatSessionDate(instant: kotlin.time.Instant): String {
     val date = Date(instant.toEpochMilliseconds())
     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
     return formatter.format(date)

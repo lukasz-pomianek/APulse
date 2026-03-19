@@ -10,8 +10,8 @@ import com.apulse.service.SessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response

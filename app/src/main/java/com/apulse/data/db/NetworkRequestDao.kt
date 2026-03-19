@@ -4,7 +4,7 @@ import androidx.room.*
 import com.apulse.data.model.NetworkRequest
 import com.apulse.data.model.RequestWithDetails
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Dao
 interface NetworkRequestDao {

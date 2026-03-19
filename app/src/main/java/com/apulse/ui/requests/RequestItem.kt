@@ -232,7 +232,7 @@ private fun getStatusColor(statusCode: Int) = when (statusCode) {
     else -> MaterialTheme.colorScheme.onSurface
 }
 
-private fun formatTime(instant: kotlinx.datetime.Instant): String {
+private fun formatTime(instant: kotlin.time.Instant): String {
     val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
     return "${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}:${localDateTime.second.toString().padStart(2, '0')}"
 }
