@@ -1,33 +1,16 @@
-buildscript {
-    ext.kotlin_version = "2.1.0"
-    ext.agp_version = "8.11.1"
-    ext.ksp_version = "2.1.0-1.0.29"
-    
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-    
-    dependencies {
-        classpath "com.android.tools.build:gradle:$agp_version"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
-        classpath "org.jetbrains.kotlin:compose-compiler-gradle-plugin:$kotlin_version"
-        classpath "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:$ksp_version"
-        classpath "com.google.dagger:hilt-android-gradle-plugin:2.52"
-    }
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.compose) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.hilt) apply false
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    // Align group & version for JitPack. VERSION env is set by JitPack to the tag (e.g., v1.0.18)
-    group = 'com.github.lukasz-pomianek'
-    version = System.getenv("VERSION") ?: "LOCAL"
-}
+// Align group & version for JitPack. VERSION env is set by JitPack to the tag (e.g., v1.0.18)
+group = 'com.github.lukasz-pomianek'
+version = System.getenv("VERSION") ?: "LOCAL"
 
 subprojects {
     afterEvaluate {
@@ -44,12 +27,6 @@ subprojects {
     tasks.withType(JavaCompile).configureEach {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-    
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-        kotlinOptions {
-            jvmTarget = "17"
-        }
     }
 }
 

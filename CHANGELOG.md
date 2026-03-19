@@ -70,6 +70,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.33] - 2026-03-19
+
+### Fixed
+- Updated Android Gradle Plugin (AGP) version to `9.1.0` to resolve Maven repository resolution errors
+- Corrected dependency notation in `app/build.gradle` (replaced dash `-` with dot `.` in `libs.androidx.activity.compose`, `libs.androidx.compose.material.icons.extended`, etc.)
+
 ## [1.0.26] - 2025-10-09
 
 ### Fixed
