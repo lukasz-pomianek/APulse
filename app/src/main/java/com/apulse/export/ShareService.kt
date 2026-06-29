@@ -93,7 +93,9 @@ class ShareService(
         format: ExportFormat = ExportFormat.APULSE_FULL,
         includeHeaders: Boolean = true,
         includeBodies: Boolean = true,
-        maxBodySize: Long? = null
+        maxBodySize: Long? = null,
+        includeRequests: Boolean = true,
+        includeLogs: Boolean = true
     ): Intent = withContext(Dispatchers.IO) {
         val options = ExportOptions(
             format = format,
@@ -101,7 +103,9 @@ class ShareService(
             includeBodies = includeBodies,
             redactSensitiveData = true,
             sessionIds = sessionIds,
-            maxBodySize = maxBodySize
+            maxBodySize = maxBodySize,
+            includeRequests = includeRequests,
+            includeLogs = includeLogs
         )
         
         val fileName = generateFileName(format, sessionIds.size)

@@ -285,7 +285,7 @@ class SessionManager private constructor(
         val now = Clock.System.now()
         val defaultSession = Session(
             id = UUID.randomUUID().toString(),
-            name = "Default Session - ${formatDateTime(now)}",
+            name = "Session ${formatDateTime(now)}",
             description = "Automatically created session",
             createdAt = now,
             updatedAt = now,

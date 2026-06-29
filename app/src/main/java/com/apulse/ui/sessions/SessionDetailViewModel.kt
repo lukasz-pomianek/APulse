@@ -27,6 +27,12 @@ class SessionDetailViewModel(
     private val repository: APulseRepository,
     private val shareService: com.apulse.export.ShareService
 ) : ViewModel() {
+
+    enum class ExportScope {
+        ALL,
+        REQUESTS_ONLY,
+        LOGS_ONLY
+    }
     
     private val _sessionWithStats = MutableStateFlow<SessionWithStats?>(null)
     val sessionWithStats: StateFlow<SessionWithStats?> = _sessionWithStats.asStateFlow()
@@ -97,7 +103,14 @@ class SessionDetailViewModel(
         _error.value = null
     }
     
-    fun exportSessionData(sessionWithStats: SessionWithStats, context: android.content.Context) {
+    fun exportSessionData(
+        sessionWithStats: SessionWithStats,
+        context: android.content.Context,
+        scope: ExportScope = ExportScope.ALL
+    ) {
+        val includeRequests = scope != ExportScope.LOGS_ONLY
+        val includeLogs = scope != ExportScope.REQUESTS_ONLY
+
         viewModelScope.launch {
             try {
                 val shareIntent = shareService.shareSessionWithOptions(
@@ -105,35 +118,40 @@ class SessionDetailViewModel(
                     format = com.apulse.export.model.ExportFormat.APULSE_FULL,
                     includeHeaders = true,
                     includeBodies = true,
-                    maxBodySize = 1024 * 1024
+                    maxBodySize = 1024 * 1024,
+                    includeRequests = includeRequests,
+                    includeLogs = includeLogs
                 )
-
                 shareIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(shareIntent)
-
-                
             } catch (e: android.database.sqlite.SQLiteBlobTooBigException) {
-                exportWithSmallerLimit(sessionWithStats, context, 512 * 1024)
+                exportWithSmallerLimit(sessionWithStats, context, 512 * 1024, includeRequests, includeLogs)
             } catch (e: Exception) {
                 android.util.Log.e("SessionDetailViewModel", "Export failed", e)
                 _error.value = "Export failed: ${e.message}"
             }
         }
     }
-    
-    private suspend fun exportWithSmallerLimit(sessionWithStats: SessionWithStats, context: android.content.Context, maxSize: Long) {
+
+    private suspend fun exportWithSmallerLimit(
+        sessionWithStats: SessionWithStats,
+        context: android.content.Context,
+        maxSize: Long,
+        includeRequests: Boolean,
+        includeLogs: Boolean
+    ) {
         try {
-             val shareIntent = shareService.shareSessionWithOptions(
+            val shareIntent = shareService.shareSessionWithOptions(
                 sessionIds = listOf(sessionWithStats.session.id),
                 format = com.apulse.export.model.ExportFormat.APULSE_FULL,
                 includeHeaders = true,
                 includeBodies = true,
-                maxBodySize = maxSize
+                maxBodySize = maxSize,
+                includeRequests = includeRequests,
+                includeLogs = includeLogs
             )
-            
             shareIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(shareIntent)
-
         } catch (e: Exception) {
             android.util.Log.e("SessionDetailViewModel", "Export failed even with smaller limit", e)
             _error.value = "Export failed - response bodies too large: ${e.message}"

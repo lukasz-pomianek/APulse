@@ -21,6 +21,7 @@ class APulseInitializerImpl : APulseInitializer {
             try {
                 val session = sessionManager.ensureActiveSession()
                 android.util.Log.d("APulseInitializerImpl", "APulse initialized with session: ${session.id}")
+                sessionManager.cleanupOldSessions(7)
             } catch (e: Exception) {
                 android.util.Log.e("APulseInitializerImpl", "Failed to initialize APulse", e)
             }

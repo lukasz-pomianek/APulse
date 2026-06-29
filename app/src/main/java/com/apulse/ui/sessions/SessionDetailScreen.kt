@@ -18,21 +18,29 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -62,13 +70,27 @@ fun SessionDetailScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
+    var showExportDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(sessionId) {
         viewModel.loadSessionDetail(sessionId)
     }
-    
+
+    if (showExportDialog) {
+        sessionWithStats?.let { sessionData ->
+            ExportScopeDialog(
+                onDismiss = { showExportDialog = false },
+                onExport = { scope ->
+                    viewModel.exportSessionData(sessionData, context, scope)
+                    showExportDialog = false
+                }
+            )
+        }
+    }
+
     Column(modifier = modifier.fillMaxSize()) {
         TopAppBar(
-            title = { 
+            title = {
                 Text(sessionWithStats?.session?.name ?: "Session Details")
             },
             navigationIcon = {
@@ -78,11 +100,7 @@ fun SessionDetailScreen(
             },
             actions = {
                 IconButton(
-                    onClick = {
-                        sessionWithStats?.let { sessionData ->
-                            viewModel.exportSessionData(sessionData, context)
-                        }
-                    },
+                    onClick = { showExportDialog = true },
                     enabled = sessionWithStats != null
                 ) {
                     Icon(
@@ -143,6 +161,19 @@ private fun SessionDetailContent(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
+    var showRequests by remember { mutableStateOf(true) }
+    var showLogs by remember { mutableStateOf(true) }
+
+    val requestCount = sessionItems.count { it is SessionItem.RequestItem }
+    val logCount = sessionItems.count { it is SessionItem.LogItem }
+
+    val filteredItems = sessionItems.filter { item ->
+        when (item) {
+            is SessionItem.RequestItem -> showRequests
+            is SessionItem.LogItem -> showLogs
+        }
+    }
+
     LazyColumn(
         modifier = modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -151,24 +182,59 @@ private fun SessionDetailContent(
         item {
             SessionStatsCard(sessionWithStats)
         }
-        
+
+        // Filter chips
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = showRequests,
+                    onClick = { showRequests = !showRequests },
+                    label = { Text("Requests ($requestCount)") },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Http,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                )
+                FilterChip(
+                    selected = showLogs,
+                    onClick = { showLogs = !showLogs },
+                    label = { Text("Logs ($logCount)") },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                )
+            }
+        }
+
         // Chronological items list
         item {
             Text(
-                text = "Activity Timeline (${sessionItems.size} items)",
+                text = "Activity Timeline (${filteredItems.size} items)",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 4.dp)
             )
         }
-        
-        if (sessionItems.isEmpty()) {
+
+        if (filteredItems.isEmpty()) {
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Card(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "No activity in this session yet",
+                        text = if (sessionItems.isEmpty()) {
+                            "No activity in this session yet"
+                        } else {
+                            "No items match the selected filters"
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(16.dp),
                         textAlign = TextAlign.Center
@@ -176,7 +242,7 @@ private fun SessionDetailContent(
                 }
             }
         } else {
-            items(sessionItems) { item ->
+            items(filteredItems) { item ->
                 when (item) {
                     is SessionItem.RequestItem -> {
                         RequestItemCard(
@@ -430,6 +496,67 @@ private fun LogItemCard(
             )
         }
     }
+}
+
+@Composable
+private fun ExportScopeDialog(
+    onDismiss: () -> Unit,
+    onExport: (SessionDetailViewModel.ExportScope) -> Unit
+) {
+    var selectedScope by rememberSaveable {
+        mutableStateOf(SessionDetailViewModel.ExportScope.ALL)
+    }
+
+    val options = listOf(
+        SessionDetailViewModel.ExportScope.ALL to "All (requests + logs)",
+        SessionDetailViewModel.ExportScope.REQUESTS_ONLY to "Requests only",
+        SessionDetailViewModel.ExportScope.LOGS_ONLY to "Logs only"
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(Icons.Default.Download, contentDescription = null)
+        },
+        title = { Text("Export Session") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = "Select content to export:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                options.forEach { (scope, label) ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        RadioButton(
+                            selected = selectedScope == scope,
+                            onClick = { selectedScope = scope }
+                        )
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onExport(selectedScope) }) {
+                Text("Export")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 // Helper function to format detailed timestamp with milliseconds
