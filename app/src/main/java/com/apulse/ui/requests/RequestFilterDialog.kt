@@ -1,4 +1,4 @@
-package com.apulse.ui.logs
+package com.apulse.ui.requests
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,27 +39,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.apulse.data.model.AppLog
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LogFilterDialog(
-    selectedPriorities: Set<Int>,
-    availableTags: List<String>,
-    dateFrom: Instant?,
-    dateTo: Instant?,
-    onPrioritiesChanged: (Set<Int>) -> Unit,
-    onTagsChanged: (Set<String>) -> Unit,
-    onDateFromChanged: (Instant?) -> Unit,
-    onDateToChanged: (Instant?) -> Unit,
+fun RequestFilterDialog(
+    availableHosts: List<String>,
+    availableCodes: List<Int>,
+    currentFilter: RequestFilter,
+    onApply: (RequestFilter) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var tempPriorities by remember { mutableStateOf(selectedPriorities) }
-    var tempTags by remember { mutableStateOf<Set<String>>(emptySet()) }
-    var tempDateFrom by remember { mutableStateOf(dateFrom) }
-    var tempDateTo by remember { mutableStateOf(dateTo) }
+    var tempHosts by remember { mutableStateOf(currentFilter.selectedHosts) }
+    var tempCodes by remember { mutableStateOf(currentFilter.selectedCodes) }
+    var tempDateFrom by remember { mutableStateOf(currentFilter.dateFrom) }
+    var tempDateTo by remember { mutableStateOf(currentFilter.dateTo) }
 
     var showFromPicker by remember { mutableStateOf(false) }
     var showToPicker by remember { mutableStateOf(false) }
@@ -72,9 +68,7 @@ fun LogFilterDialog(
             onDismissRequest = { showFromPicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    state.selectedDateMillis?.let {
-                        tempDateFrom = Instant.fromEpochMilliseconds(it)
-                    }
+                    state.selectedDateMillis?.let { tempDateFrom = Instant.fromEpochMilliseconds(it) }
                     showFromPicker = false
                 }) { Text("OK") }
             },
@@ -94,9 +88,7 @@ fun LogFilterDialog(
             onDismissRequest = { showToPicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    state.selectedDateMillis?.let {
-                        tempDateTo = Instant.fromEpochMilliseconds(it)
-                    }
+                    state.selectedDateMillis?.let { tempDateTo = Instant.fromEpochMilliseconds(it) }
                     showToPicker = false
                 }) { Text("OK") }
             },
@@ -122,84 +114,45 @@ fun LogFilterDialog(
                     .verticalScroll(rememberScrollState())
             ) {
                 Text(
-                    text = "Filter Logs",
+                    text = "Filter Requests",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ── PRIORITY LEVELS ───────────────────────────────
+                // ── HOSTS ──────────────────────────────────────────
                 Text(
-                    text = "Priority Levels",
+                    text = "Hosts",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                listOf(
-                    AppLog.VERBOSE,
-                    AppLog.DEBUG,
-                    AppLog.INFO,
-                    AppLog.WARN,
-                    AppLog.ERROR
-                ).forEach { priority ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Checkbox(
-                            checked = priority in tempPriorities,
-                            onCheckedChange = { checked ->
-                                tempPriorities = if (checked) {
-                                    tempPriorities + priority
-                                } else {
-                                    tempPriorities - priority
-                                }
-                            }
-                        )
-                        Surface(
-                            color = AppLog.getPriorityColor(priority),
-                            modifier = Modifier.padding(start = 8.dp)
-                        ) {
-                            Text(
-                                text = AppLog.getPriorityName(priority),
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                color = Color.White,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                    }
-                }
-
-                // ── TAGS ─────────────────────────────────────────
-                if (availableTags.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider()
-                    Spacer(modifier = Modifier.height(16.dp))
-
+                if (availableHosts.isEmpty()) {
                     Text(
-                        text = "Tags",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        text = "No hosts recorded yet",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    availableTags.forEach { tag ->
+                } else {
+                    availableHosts.forEach { host ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Checkbox(
-                                checked = tag in tempTags,
+                                checked = host in tempHosts,
                                 onCheckedChange = { checked ->
-                                    tempTags = if (checked) tempTags + tag else tempTags - tag
+                                    tempHosts = if (checked) tempHosts + host else tempHosts - host
                                 }
                             )
                             Text(
-                                text = tag,
-                                modifier = Modifier.padding(start = 8.dp),
-                                style = MaterialTheme.typography.bodyMedium
+                                text = host,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier
+                                    .padding(start = 4.dp)
+                                    .weight(1f)
                             )
                         }
                     }
@@ -209,7 +162,59 @@ fun LogFilterDialog(
                 HorizontalDivider()
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ── DATE RANGE ────────────────────────────────────
+                // ── STATUS CODES ───────────────────────────────────
+                Text(
+                    text = "Status Codes",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (availableCodes.isEmpty()) {
+                    Text(
+                        text = "No status codes recorded yet",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    availableCodes.forEach { code ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Checkbox(
+                                checked = code in tempCodes,
+                                onCheckedChange = { checked ->
+                                    tempCodes = if (checked) tempCodes + code else tempCodes - code
+                                }
+                            )
+                            Surface(
+                                color = statusCodeColor(code),
+                                modifier = Modifier.padding(start = 4.dp)
+                            ) {
+                                Text(
+                                    text = "$code",
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                    color = Color.White,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = statusCodeLabel(code),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // ── DATE RANGE ─────────────────────────────────────
                 Text(
                     text = "Date Range",
                     style = MaterialTheme.typography.titleMedium,
@@ -283,33 +288,31 @@ fun LogFilterDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // ── ACTION BUTTONS ────────────────────────────────
+                // ── ACTION BUTTONS ─────────────────────────────────
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = {
-                        tempPriorities = emptySet()
-                        tempTags = emptySet()
+                        tempHosts = emptySet()
+                        tempCodes = emptySet()
                         tempDateFrom = null
                         tempDateTo = null
-                        onPrioritiesChanged(emptySet())
-                        onTagsChanged(emptySet())
-                        onDateFromChanged(null)
-                        onDateToChanged(null)
                     }) {
                         Text("Reset")
                     }
-
                     TextButton(onClick = onDismiss) {
                         Text("Cancel")
                     }
-
                     Button(onClick = {
-                        onPrioritiesChanged(tempPriorities)
-                        onTagsChanged(tempTags)
-                        onDateFromChanged(tempDateFrom)
-                        onDateToChanged(tempDateTo)
+                        onApply(
+                            RequestFilter(
+                                selectedHosts = tempHosts,
+                                selectedCodes = tempCodes,
+                                dateFrom = tempDateFrom,
+                                dateTo = tempDateTo
+                            )
+                        )
                         onDismiss()
                     }) {
                         Text("Apply")
@@ -320,4 +323,45 @@ fun LogFilterDialog(
     }
 }
 
-private fun Instant.formatDate(): String = toString().take(10)
+private fun Instant.formatDate(): String {
+    // ISO string is "yyyy-MM-ddTHH:mm:ssZ" — take first 10 chars
+    return toString().take(10)
+}
+
+private fun statusCodeColor(code: Int): Color = when {
+    code in 100..199 -> Color(0xFF9E9E9E)
+    code in 200..299 -> Color(0xFF4CAF50)
+    code in 300..399 -> Color(0xFF2196F3)
+    code in 400..499 -> Color(0xFFFF9800)
+    code in 500..599 -> Color(0xFFF44336)
+    else -> Color(0xFF9E9E9E)
+}
+
+private fun statusCodeLabel(code: Int): String = when (code) {
+    200 -> "OK"
+    201 -> "Created"
+    204 -> "No Content"
+    301 -> "Moved Permanently"
+    302 -> "Found"
+    304 -> "Not Modified"
+    400 -> "Bad Request"
+    401 -> "Unauthorized"
+    403 -> "Forbidden"
+    404 -> "Not Found"
+    408 -> "Request Timeout"
+    409 -> "Conflict"
+    422 -> "Unprocessable Entity"
+    429 -> "Too Many Requests"
+    500 -> "Internal Server Error"
+    502 -> "Bad Gateway"
+    503 -> "Service Unavailable"
+    504 -> "Gateway Timeout"
+    else -> when {
+        code in 100..199 -> "Informational"
+        code in 200..299 -> "Success"
+        code in 300..399 -> "Redirection"
+        code in 400..499 -> "Client Error"
+        code in 500..599 -> "Server Error"
+        else -> ""
+    }
+}

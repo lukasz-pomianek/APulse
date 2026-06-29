@@ -10,6 +10,18 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+// Moved here from SampleApp since SampleApp now shows APulseApp directly
+data class NetworkResponse(
+    val method: String,
+    val url: String,
+    val statusCode: Int,
+    val duration: Long,
+    val responseSize: Int,
+    val timestamp: Long = System.currentTimeMillis(),
+    val error: String? = null
+)
+
+
 @HiltViewModel
 class SampleViewModel @Inject constructor(
     private val sampleApi: SampleApi,

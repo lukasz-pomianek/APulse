@@ -121,6 +121,15 @@ class SessionListViewModel(
             database.sessionDao().deleteSessionById(sessionId)
         }
     }
+
+    fun clearInactiveSessions() {
+        viewModelScope.launch(Dispatchers.IO) {
+            sessions.value
+                .map { it.session }
+                .filter { !it.isActive }
+                .forEach { database.sessionDao().deleteSessionById(it.id) }
+        }
+    }
     
     fun updateSession(session: Session) {
         viewModelScope.launch(Dispatchers.IO) {

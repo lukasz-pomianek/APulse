@@ -133,7 +133,9 @@ data class ExportOptions(
     val sessionIds: List<String>? = null, // null = all sessions
     val dateRange: APulseDateRange? = null,
     val maxBodySize: Long? = null,
-    val tags: List<String>? = null // filter by tags
+    val tags: List<String>? = null, // filter by tags
+    val includeRequests: Boolean = true,
+    val includeLogs: Boolean = true
 )
 
 enum class ExportFormat {

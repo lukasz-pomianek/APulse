@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,7 +30,10 @@ fun SessionListScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val importResult by viewModel.importResult.collectAsState()
     var showNewSessionDialog by remember { mutableStateOf(false) }
+    var showClearInactiveDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val hasInactiveSessions = sessions.any { !it.session.isActive }
     
     // File picker launcher for import
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -44,6 +48,30 @@ fun SessionListScreen(
             modifier = Modifier.align(Alignment.BottomCenter)
         )
         Column(modifier = Modifier.fillMaxSize()) {
+            if (hasInactiveSessions) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    OutlinedButton(
+                        onClick = { showClearInactiveDialog = true },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.DeleteSweep,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Clear All Inactive")
+                    }
+                }
+            }
+
             if (isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -100,6 +128,43 @@ fun SessionListScreen(
         ) {
             Icon(Icons.Default.Add, contentDescription = "Create Session")
         }
+    }
+
+    // Clear Inactive Sessions Dialog
+    if (showClearInactiveDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearInactiveDialog = false },
+            icon = {
+                Icon(
+                    Icons.Default.DeleteSweep,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = { Text("Clear Inactive Sessions") },
+            text = {
+                val count = sessions.count { !it.session.isActive }
+                Text("This will permanently delete $count inactive session${if (count != 1) "s" else ""} and all their requests and logs. This action cannot be undone.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.clearInactiveSessions()
+                        showClearInactiveDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearInactiveDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     // New Session Dialog

@@ -97,8 +97,12 @@ class ExportService(
         }
         
         return filteredSessions.map { session ->
-            val requests = database.networkRequestDao().getRequestsForSession(session.id).first()
-            val logs = database.appLogDao().getLogsForSession(session.id).first()
+            val requests = if (options.includeRequests) {
+                database.networkRequestDao().getRequestsForSession(session.id).first()
+            } else emptyList()
+            val logs = if (options.includeLogs) {
+                database.appLogDao().getLogsForSession(session.id).first()
+            } else emptyList()
             val fullRequests = requests.map { request ->
                 val requestHeaders = if (options.includeHeaders) {
                     database.requestHeadersDao().getHeadersForRequest(request.id)

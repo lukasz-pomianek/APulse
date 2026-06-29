@@ -5,6 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.execSQL
 import com.apulse.data.model.AppLog
 import com.apulse.data.model.AppMetadata
 import com.apulse.data.model.NetworkRequest
@@ -55,8 +57,13 @@ abstract class APulseDatabase : RoomDatabase() {
                     APulseDatabase::class.java,
                     DATABASE_NAME
                 )
-                .enableMultiInstanceInvalidation()
-                .fallbackToDestructiveMigration() // For now, in production we'd add proper migrations
+                    .enableMultiInstanceInvalidation()
+                    .addCallback(object : Callback() {
+                        override fun onOpen(connection: SQLiteConnection) {
+                            connection.execSQL("PRAGMA foreign_keys=ON")
+                        }
+                    })
+                    .fallbackToDestructiveMigration(false) // For now, in production we'd add proper migrations
                 .build()
                 INSTANCE = instance
                 instance

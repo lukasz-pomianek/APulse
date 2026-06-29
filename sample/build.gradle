@@ -97,6 +97,13 @@ dependencies {
     // Coroutines
     implementation libs.kotlinx.coroutines.android
 
+    // Date/Time (needed for AppLog seeding)
+    implementation libs.kotlinx.datetime
+
+    // Room (needed to access APulseDatabase API for seeding)
+    implementation libs.androidx.room.runtime
+    implementation libs.androidx.room.ktx
+
     // Error Prone annotations for R8
     implementation libs.error.prone.annotations
 

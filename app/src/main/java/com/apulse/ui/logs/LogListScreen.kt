@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
@@ -69,6 +68,8 @@ fun LogListScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedPriorities by viewModel.selectedPriorities.collectAsState()
+    val dateFrom by viewModel.dateFrom.collectAsState()
+    val dateTo by viewModel.dateTo.collectAsState()
     
     var showFilterDialog by remember { mutableStateOf(false) }
     var showSearchBar by remember { mutableStateOf(false) }
@@ -97,9 +98,6 @@ fun LogListScreen(
                 IconButton(onClick = { showFilterDialog = true }) {
                     Icon(Icons.Default.FilterList, contentDescription = "Filter")
                 }
-                IconButton(onClick = { viewModel.clearLogs() }) {
-                    Icon(Icons.Default.Clear, contentDescription = "Clear Logs")
-                }
             }
         }
 
@@ -119,15 +117,14 @@ fun LogListScreen(
         }
 
         // Filters summary - show active filters
-        if (selectedPriorities.isNotEmpty()) {
+        if (selectedPriorities.isNotEmpty() || dateFrom != null || dateTo != null) {
             LazyRow(
                 modifier = Modifier.padding(vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(selectedPriorities.toList()) { priority ->
-                    // Use OutlinedButton as fallback if FilterChip has compatibility issues
                     OutlinedButton(
-                        onClick = { 
+                        onClick = {
                             viewModel.filterByPriority(selectedPriorities - priority)
                         },
                         modifier = Modifier.height(32.dp),
@@ -139,6 +136,28 @@ fun LogListScreen(
                             text = "✕ ${AppLog.getPriorityName(priority)}",
                             fontSize = 12.sp
                         )
+                    }
+                }
+                dateFrom?.let { from ->
+                    item {
+                        OutlinedButton(
+                            onClick = { viewModel.filterByDateFrom(null) },
+                            modifier = Modifier.height(32.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp)
+                        ) {
+                            Text(text = "✕ From: ${from.toString().take(10)}", fontSize = 12.sp)
+                        }
+                    }
+                }
+                dateTo?.let { to ->
+                    item {
+                        OutlinedButton(
+                            onClick = { viewModel.filterByDateTo(null) },
+                            modifier = Modifier.height(32.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp)
+                        ) {
+                            Text(text = "✕ To: ${to.toString().take(10)}", fontSize = 12.sp)
+                        }
                     }
                 }
             }
@@ -201,8 +220,12 @@ fun LogListScreen(
         LogFilterDialog(
             selectedPriorities = selectedPriorities,
             availableTags = viewModel.getAvailableTags(),
+            dateFrom = dateFrom,
+            dateTo = dateTo,
             onPrioritiesChanged = viewModel::filterByPriority,
             onTagsChanged = viewModel::filterByTags,
+            onDateFromChanged = viewModel::filterByDateFrom,
+            onDateToChanged = viewModel::filterByDateTo,
             onDismiss = { showFilterDialog = false }
         )
     }

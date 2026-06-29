@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
 
 /**
  * ViewModel for managing application logs display and filtering
@@ -25,7 +25,7 @@ class LogListViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _selectedPriorities = MutableStateFlow<Set<Int>>(emptySet()) // Empty set means show all
+    private val _selectedPriorities = MutableStateFlow<Set<Int>>(emptySet())
     val selectedPriorities: StateFlow<Set<Int>> = _selectedPriorities.asStateFlow()
 
     private val _selectedTags = MutableStateFlow<Set<String>>(emptySet())
@@ -34,37 +34,43 @@ class LogListViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    // Reactive filtering using combine to apply all filters
+    private val _dateFrom = MutableStateFlow<Instant?>(null)
+    val dateFrom: StateFlow<Instant?> = _dateFrom.asStateFlow()
+
+    private val _dateTo = MutableStateFlow<Instant?>(null)
+    val dateTo: StateFlow<Instant?> = _dateTo.asStateFlow()
+
     val logs: StateFlow<List<AppLog>> = combine(
-        database.appLogDao().getAllLogs(),
-        _searchQuery,
-        _selectedPriorities,
-        _selectedTags
-    ) { allLogs, query, priorities, tags ->
-        
-        var filtered = allLogs
-        
-        // Apply search query - filter by message content
-        if (query.isNotBlank()) {
-            filtered = filtered.filter { log ->
-                log.message.contains(query, ignoreCase = true)
+        combine(
+            database.appLogDao().getAllLogs(),
+            _searchQuery,
+            _selectedPriorities,
+            _selectedTags
+        ) { allLogs, query, priorities, tags ->
+            var filtered = allLogs
+            if (query.isNotBlank()) {
+                filtered = filtered.filter { it.message.contains(query, ignoreCase = true) }
             }
-        }
-        
-        // Apply priority filters - only show selected priorities
-        if (priorities.isNotEmpty()) {
-            filtered = filtered.filter { log ->
-                priorities.contains(log.priority)
+            if (priorities.isNotEmpty()) {
+                filtered = filtered.filter { priorities.contains(it.priority) }
             }
-        }
-        
-        // Apply tag filters - only show selected tags
-        if (tags.isNotEmpty()) {
-            filtered = filtered.filter { log ->
-                log.tag != null && tags.contains(log.tag)
+            if (tags.isNotEmpty()) {
+                filtered = filtered.filter { it.tag != null && tags.contains(it.tag) }
             }
+            filtered
+        },
+        _dateFrom,
+        _dateTo
+    ) { filtered, dateFrom, dateTo ->
+        var result = filtered
+        dateFrom?.let { from ->
+            result = result.filter { it.timestamp >= from }
         }
-        filtered
+        dateTo?.let { to ->
+            val endOfDay = Instant.fromEpochMilliseconds(to.toEpochMilliseconds() + 86_400_000L)
+            result = result.filter { it.timestamp <= endOfDay }
+        }
+        result
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -79,26 +85,21 @@ class LogListViewModel(
         _selectedTags.value = tags
     }
 
-    fun searchLogs(query: String) {
-        _searchQuery.value = query
+    fun filterByDateFrom(date: Instant?) {
+        _dateFrom.value = date
     }
 
-    fun clearLogs() {
-        viewModelScope.launch {
-            try {
-                val currentSessionId = sessionManager.getCurrentSessionId()
-                database.appLogDao().deleteLogsBySession(currentSessionId)
-            } catch (e: Exception) {
-                android.util.Log.e("LogListViewModel", "Failed to clear logs", e)
-            }
-        }
+    fun filterByDateTo(date: Instant?) {
+        _dateTo.value = date
+    }
+
+    fun searchLogs(query: String) {
+        _searchQuery.value = query
     }
 
     fun getAvailableTags(): List<String> {
         return logs.value.mapNotNull { it.tag }.distinct().sorted()
     }
-
-
 
     class Factory(
         private val database: APulseDatabase,
